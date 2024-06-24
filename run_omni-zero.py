@@ -75,10 +75,10 @@ def get_largest_face_embedding_and_kps(image, target_image=None):
 
 def generate(
     prompt="A person",
-    composition_image="https://github.com/gjnave/images/blob/main/jc1.jpg",
-    style_image="https://github.com/gjnave/images/blob/main/duckinspace.jpg",
-    identity_image="https://github.com/gjnave/images/blob/main/gj1.jpg",
-    base_image="https://github.com/gjnave/images/blob/main/jc1.jpg",
+    composition_image="https://github.com/okaris/omni-zero/assets/1448702/2ca63443-c7f3-4ba6-95c1-2a341414865f",
+    style_image="https://github.com/okaris/omni-zero/assets/1448702/64dc150b-f683-41b1-be23-b6a52c771584",
+    identity_image="https://github.com/okaris/omni-zero/assets/1448702/ba193a3a-f90e-4461-848a-560454531c58",
+    base_image="https://github.com/okaris/omni-zero/assets/1448702/2ca63443-c7f3-4ba6-95c1-2a341414865f",
     seed=42,
     negative_prompt="blurry, out of focus",
     guidance_scale=3.0,
@@ -239,7 +239,7 @@ with gr.Blocks() as demo:
                 )
         # clear.click(lambda: None, None, chatbot, queue=False)
     gr.Examples(
-        examples=[["A person", "https://github.com/gjnave/images/blob/main/jc1.jpg", "https://github.com/gjnave/images/blob/main/duckinspace.jpg", "https://github.com/gjnave/images/blob/main/gj1.jpg"]],
+        examples=[["A person", "https://github.com/okaris/omni-zero/assets/1448702/2ca63443-c7f3-4ba6-95c1-2a341414865f", "https://github.com/okaris/omni-zero/assets/1448702/64dc150b-f683-41b1-be23-b6a52c771584", "https://github.com/okaris/omni-zero/assets/1448702/ba193a3a-f90e-4461-848a-560454531c58"]],
         inputs=[prompt, composition_image, style_image, identity_image],
         outputs=[out],
         fn=generate,
