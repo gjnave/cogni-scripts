@@ -239,7 +239,7 @@ with gr.Blocks() as demo:
                 )
         # clear.click(lambda: None, None, chatbot, queue=False)
     gr.Examples(
-        examples=[["A person", "https://github.com/okaris/omni-zero/assets/1448702/2ca63443-c7f3-4ba6-95c1-2a341414865f", "https://github.com/okaris/omni-zero/assets/1448702/64dc150b-f683-41b1-be23-b6a52c771584", "https://github.com/okaris/omni-zero/assets/1448702/ba193a3a-f90e-4461-848a-560454531c58"]],
+        examples=[["A person", "https://github.com/gjnave/images/blob/main/jc1.jpg", "https://github.com/gjnave/images/blob/main/duckinspace.jpg", "https://github.com/gjnave/images/blob/main/gj1.jpg"]],
         inputs=[prompt, composition_image, style_image, identity_image],
         outputs=[out],
         fn=generate,
