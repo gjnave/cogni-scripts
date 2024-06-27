@@ -175,11 +175,7 @@ with gr.Blocks(css=css) as block:
                                  type="numpy", elem_id="audio_out")
             with gr.Row(visible=False) as share_row:
                 with gr.Group(elem_id="share-btn-container"):
-                    community_icon = gr.HTML(community_icon_html)
                     loading_icon = gr.HTML(loading_icon_html)
-                    share_button = gr.Button(
-                        "Share to community", elem_id="share-btn")
-                    share_button.click(None, [], [], _js=share_js)
     inputs = [input_text, options]
     outputs = [audio_out]
     gr.Examples(examples=examples, fn=gen_tts, inputs=inputs,
