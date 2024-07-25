@@ -1,8 +1,8 @@
+import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from PIL import Image, ImageTk
 import subprocess
-import os
 import platform
 import random
 import string
@@ -205,23 +205,20 @@ class RembgGUI(tk.Tk):
             self.result_label.config(text="Background removal completed successfully.")
             self.display_image(output_path)
         except subprocess.CalledProcessError as e:
-                        messagebox.showerror("Error", f"An error occurred: {e}")
+            messagebox.showerror("Error", f"An error occurred: {e}")
 
-    def set_default_output(self, input_path):
-        if input_path:
-            base_name = os.path.basename(input_path)
-            name, ext = os.path.splitext(base_name)
-            output_name = f"{name}_rembg{ext}"
+    def open_output_folder(self):
+        output_folder = self.output_entry.get()
+        if not output_folder:
+            messagebox.showerror("Error", "Output path not specified.")
+            return
 
-            # Create the './outputs' directory if it doesn't exist
-            output_dir = os.path.join(os.getcwd(), 'outputs')
-            if not os.path.exists(output_dir):
-                os.makedirs(output_dir)
-        
-            # Set the output path to be inside the './outputs' directory
-            output_path = os.path.join(output_dir, output_name)
-            self.output_entry.delete(0, tk.END)
-            self.output_entry.insert(0, output_path)
+        if platform.system() == "Windows":
+            os.startfile(output_folder)
+        elif platform.system() == "Darwin":
+            subprocess.Popen(["open", output_folder])
+        else:
+            subprocess.Popen(["xdg-open", output_folder])
 
 if __name__ == "__main__":
     app = RembgGUI()
