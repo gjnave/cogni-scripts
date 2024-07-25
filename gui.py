@@ -11,7 +11,7 @@ class RembgGUI(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("rembg GUI")
-        self.geometry("1200x900")
+        self.geometry("1000x900")
         
         # Define extra parameters options
         self.extra_params_options = {
