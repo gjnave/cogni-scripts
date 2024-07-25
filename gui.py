@@ -12,65 +12,65 @@ class RembgGUI(tk.Tk):
         super().__init__()
         self.title("rembg GUI")
         self.geometry("1200x900")
-
+        
         # Define extra parameters options
         self.extra_params_options = {
             "Return only the mask": "-om",
             "Apply alpha matting": "-a"
         }
-
+        
         self.create_widgets()
-
+        
     def create_widgets(self):
         self.center_window()
-
+        
         tk.Label(self, text="Select Function").grid(row=0, column=0, pady=10, padx=10)
-
+        
         self.function_var = tk.StringVar(value="Single Image")
         function_menu = tk.OptionMenu(self, self.function_var, "Single Image", "Folder", "Web Image", command=self.update_inputs)
         function_menu.grid(row=0, column=1, pady=10, padx=10)
         self.function_var.trace_add("write", self.update_inputs)
-
+        
         self.input_label = tk.Label(self, text="Input Path")
         self.input_label.grid(row=1, column=0, pady=10, padx=10)
-
+        
         self.input_entry = tk.Entry(self, width=80)
         self.input_entry.grid(row=1, column=1, pady=10, padx=10)
-
+        
         self.input_button = tk.Button(self, text="Browse", command=self.browse_input)
         self.input_button.grid(row=1, column=2, pady=10, padx=10)
-
+        
         self.output_label = tk.Label(self, text="Output Path")
         self.output_label.grid(row=2, column=0, pady=10, padx=10)
-
+        
         self.output_entry = tk.Entry(self, width=80)
         self.output_entry.grid(row=2, column=1, pady=10, padx=10)
-
+        
         self.output_button = tk.Button(self, text="Browse", command=self.browse_output)
         self.output_button.grid(row=2, column=2, pady=10, padx=10)
-
+        
         self.extra_params_label = tk.Label(self, text="Extra Options (Select from below)")
         self.extra_params_label.grid(row=3, column=0, pady=10, padx=10)
-
+        
         self.extra_params_list = tk.Listbox(self, height=8, selectmode=tk.MULTIPLE, width=100)
         for option in self.extra_params_options.keys():
             self.extra_params_list.insert(tk.END, option)
         self.extra_params_list.grid(row=4, column=0, columnspan=3, pady=10, padx=10)
-
+        
         self.submit_button = tk.Button(self, text="Submit", command=self.run_rembg)
         self.submit_button.grid(row=5, column=0, columnspan=3, pady=20)
-
+        
         self.result_label = tk.Label(self, text="", fg="green")
         self.result_label.grid(row=6, column=0, columnspan=3)
-
+        
         self.image_label = tk.Label(self)
         self.image_label.grid(row=7, column=0, columnspan=3, pady=10, padx=10)
-
+        
         self.open_output_button = tk.Button(self, text="Open Output Folder", command=self.open_output_folder)
         self.open_output_button.grid(row=8, column=0, columnspan=3, pady=20)
-
+        
         self.update_inputs()
-
+    
     def center_window(self):
         self.update_idletasks()
         width = self.winfo_width()
@@ -78,7 +78,7 @@ class RembgGUI(tk.Tk):
         x = (self.winfo_screenwidth() // 2) - (width // 2)
         y = (self.winfo_screenheight() // 2) - (height // 2)
         self.geometry(f'{width}x{height}+{x}+{y}')
-
+    
     def update_inputs(self, *args):
         function = self.function_var.get()
         if function == "Single Image":
@@ -106,7 +106,7 @@ class RembgGUI(tk.Tk):
             self.input_entry.delete(0, tk.END)
             self.output_entry.delete(0, tk.END)
             self.image_label.grid_remove()
-
+    
     def browse_input(self):
         function = self.function_var.get()
         if function == "Single Image":
@@ -121,7 +121,7 @@ class RembgGUI(tk.Tk):
             self.set_default_output(path)
         else:
             messagebox.showinfo("Info", "Please manually enter the input parameters.")
-
+    
     def browse_output(self):
         function = self.function_var.get()
         if function == "Single Image":
@@ -134,19 +134,26 @@ class RembgGUI(tk.Tk):
             self.output_entry.insert(0, path)
         else:
             messagebox.showinfo("Info", "Please manually enter the output parameters.")
-
+    
     def set_default_output(self, input_path):
         if input_path:
             base_name = os.path.basename(input_path)
             name, ext = os.path.splitext(base_name)
             output_name = f"{name}_rembg{ext}"
-            output_path = os.path.join(os.getcwd(), output_name)
+
+            # Create the './outputs' directory if it doesn't exist
+            output_dir = os.path.join(os.getcwd(), 'outputs')
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            
+            # Set the output path to be inside the './outputs' directory
+            output_path = os.path.join(output_dir, output_name)
             self.output_entry.delete(0, tk.END)
             self.output_entry.insert(0, output_path)
-
+    
     def generate_random_filename(self):
         return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
-
+    
     def display_image(self, path):
         try:
             image = Image.open(path)
@@ -157,7 +164,7 @@ class RembgGUI(tk.Tk):
         except Exception as e:
             self.image_label.config(text="Unable to display image.")
             self.image_label.image = None
-
+    
     def run_rembg(self):
         function_mapping = {
             "Single Image": "i",
@@ -184,7 +191,7 @@ class RembgGUI(tk.Tk):
             curl_command = f"curl -s {input_path}"
             rembg_command = "rembg i -om" if "-om" in [self.extra_params_options.get(self.extra_params_list.get(i)) for i in self.extra_params_list.curselection()] else "rembg i"
             full_command = f"{curl_command} | {rembg_command} > {output_path}"
-
+            
             try:
                 print("Running command:", full_command)
                 subprocess.run(full_command, shell=True, check=True)
@@ -192,7 +199,7 @@ class RembgGUI(tk.Tk):
                 self.display_image(output_path)
             except subprocess.CalledProcessError as e:
                 messagebox.showerror("Error", f"An error occurred: {e}")
-
+            
             return  # Skip further processing for web images
 
         # Append extra parameters
