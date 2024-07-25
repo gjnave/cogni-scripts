@@ -207,15 +207,21 @@ class RembgGUI(tk.Tk):
         except subprocess.CalledProcessError as e:
                         messagebox.showerror("Error", f"An error occurred: {e}")
 
-    def open_output_folder(self):
-        output_path = self.output_entry.get()
-        folder = os.path.dirname(output_path)
-        if platform.system() == "Windows":
-            os.startfile(folder)
-        elif platform.system() == "Darwin":
-            subprocess.run(["open", folder])
-        else:
-            subprocess.run(["xdg-open", folder])
+    def set_default_output(self, input_path):
+        if input_path:
+            base_name = os.path.basename(input_path)
+            name, ext = os.path.splitext(base_name)
+            output_name = f"{name}_rembg{ext}"
+
+            # Create the './outputs' directory if it doesn't exist
+            output_dir = os.path.join(os.getcwd(), 'outputs')
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+        
+            # Set the output path to be inside the './outputs' directory
+            output_path = os.path.join(output_dir, output_name)
+            self.output_entry.delete(0, tk.END)
+            self.output_entry.insert(0, output_path)
 
 if __name__ == "__main__":
     app = RembgGUI()
