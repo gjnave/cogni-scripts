@@ -11,7 +11,7 @@ class RembgGUI(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("rembg GUI")
-        self.geometry("1200x900")
+        self.geometry("1000x900")
         
         # Define extra parameters options
         self.extra_params_options = {
@@ -189,6 +189,15 @@ class RembgGUI(tk.Tk):
         elif function == "s":
             # Handle web image with curl and rembg
             curl_command = f"curl -s {input_path}"
+
+            # Construct output path inside 'outputs' directory
+            base_name = os.path.basename(self.output_entry.get())
+            output_name = base_name if base_name else self.generate_random_filename() + ".jpg"
+            output_dir = os.path.join(os.getcwd(), 'outputs')
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            output_path = os.path.join(output_dir, output_name)
+            
             rembg_command = "rembg i -om" if "-om" in [self.extra_params_options.get(self.extra_params_list.get(i)) for i in self.extra_params_list.curselection()] else "rembg i"
             full_command = f"{curl_command} | {rembg_command} > {output_path}"
             
@@ -199,7 +208,8 @@ class RembgGUI(tk.Tk):
                 self.display_image(output_path)
             except subprocess.CalledProcessError as e:
                 messagebox.showerror("Error", f"An error occurred: {e}")
-            
+
+                    
             return  # Skip further processing for web images
 
         # Append extra parameters
