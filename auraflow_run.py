@@ -13,7 +13,7 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 #torch._inductor.config.coordinate_descent_check_all_directions = True
 
 pipe = AuraFlowPipeline.from_pretrained(
-	"fal/AuraFlow-v0.2",
+	"fal/AuraFlow-v0.3",
     torch_dtype=torch.float16
 ).to("cuda")
 
@@ -69,8 +69,8 @@ with gr.Blocks(css=css) as demo:
     with gr.Column(elem_id="col-container"):
         gr.Markdown(f"""
         # AuraFlow 0.1
-        Demo of the [AuraFlow 0.1](https://huggingface.co/fal/AuraFlow-v0.2) 6.8B parameters open source diffusion transformer model
-        [[blog](https://blog.fal.ai/auraflow/)] [[model](https://huggingface.co/fal/AuraFlow)] [[fal](https://fal.ai/models/fal-ai/aura-flow)]
+        Demo of the [AuraFlow 0.3](https://huggingface.co/fal/AuraFlow-v0.2) 6.8B parameters open source diffusion transformer model
+        [[blog](https://blog.fal.ai/auraflow/)] [[model](https://huggingface.co/fal/AuraFlow)] [[fal](https://fal.ai/models/fal-ai/aura-flow)] [[music](https://www.daysinging.com)]
         """)
         
         with gr.Row():
