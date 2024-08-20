@@ -69,7 +69,7 @@ with gr.Blocks(css=css) as demo:
     with gr.Column(elem_id="col-container"):
         gr.Markdown(f"""
         # AuraFlow 0.1
-        Demo of the [AuraFlow 0.3](https://huggingface.co/fal/AuraFlow-v0.2) 6.8B parameters open source diffusion transformer model
+        Demo of the [AuraFlow 0.3](https://huggingface.co/fal/AuraFlow-v0.3) 6.8B parameters open source diffusion transformer model
         [[blog](https://blog.fal.ai/auraflow/)] [[model](https://huggingface.co/fal/AuraFlow)] [[fal](https://fal.ai/models/fal-ai/aura-flow)] [[music](https://www.daysinging.com)]
         """)
         
