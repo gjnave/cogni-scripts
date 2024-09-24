@@ -168,7 +168,8 @@ def generate(
 
 with gr.Blocks() as demo:
     gr.Markdown("<h1 style='text-align: center'>Omni Zero</h1>")
-    gr.Markdown("<h4 style='text-align: center'>A diffusion pipeline for zero-shot stylized portrait creation [<a href='https://github.com/okaris/omni-zero' target='_blank'>GitHub</a>], [<a href='https://styleof.com/s/remix-yourself' target='_blank'>StyleOf Remix Yourself</a>]</h4>")
+    gr.Markdown("<h4 style='text-align: center'>A diffusion pipeline for zero-shot stylized portrait creation </h4>") 
+    gr.Markdown)"<h4 style='text-align: center'>[<a href='https://open.spotify.com/album/3I2aN4C0clBSM8I1DmoIsN' target='_blank'>Listen to some great music!</a>], [<a href='http://www.patreon.com/cognibuild' target='_blank'>Find more great Installers!</a>]
     with gr.Row():
         with gr.Column():
             with gr.Row():
