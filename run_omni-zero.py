@@ -164,10 +164,13 @@ def generate(
     return images
 
 #Move the components in the example fields outside so they are available when gr.Examples is instantiated
+buy_me_a_coffee_button = """
+[![Buy me a coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=&slug=vk654cf2pv8&button_colour=BD5FFF&font_colour=ffffff&font_family=Bree&outline_colour=000000&coffee_colour=FFDD00)](https://www.buymeacoffee.com/vk654cf2pv8)
+"""
 
 
 with gr.Blocks() as demo:
-    gr.Markdown("<h1 style='text-align: center'>Omni Zero</h1>")
+    gr.Markdown("<h1 style='text-align: center'>Omni Zero</h1> - Developer: Okaris")
     gr.Markdown("<h4 style='text-align: center'>A diffusion pipeline for zero-shot stylized portrait creation </h4>") 
     gr.Markdown("<h4 style='text-align: center'>[<a href='https://open.spotify.com/album/3I2aN4C0clBSM8I1DmoIsN' target='_blank'>Listen to some great music!</a>], [<a href='http://www.patreon.com/cognibuild' target='_blank'>Find more great Installers!</a>]</h4>")
     with gr.Row():
