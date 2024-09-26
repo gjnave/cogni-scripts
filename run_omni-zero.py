@@ -170,7 +170,7 @@ buy_me_a_coffee_button = """
 
 
 with gr.Blocks() as demo:
-    gr.Markdown("<h1 style='text-align: center'>Omni Zero</h1> - Developer: Okaris")
+    gr.Markdown("<h1 style='text-align: center'>Omni Zero</h1> - Developer: Okaris - <a href='https://buymeacoffee.com/vk654cf2pv8'>Buy him a coffee</a>" )
     gr.Markdown("<h4 style='text-align: center'>A diffusion pipeline for zero-shot stylized portrait creation </h4>") 
     gr.Markdown("<h4 style='text-align: center'>[<a href='https://open.spotify.com/album/3I2aN4C0clBSM8I1DmoIsN' target='_blank'>Listen to some great music!</a>], [<a href='http://www.patreon.com/cognibuild' target='_blank'>Find more great Installers!</a>]</h4>")
     with gr.Row():
