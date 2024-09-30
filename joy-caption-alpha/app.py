@@ -13,7 +13,7 @@ import torchvision.transforms.functional as TVF
 CLIP_PATH = "google/siglip-so400m-patch14-384"
 MODEL_PATH = "meta-llama/Meta-Llama-3.1-8B"
 CHECKPOINT_PATH = Path("9em124t2-499968")
-TITLE = "<h1><center>JoyCaption Alpha One </center><br><center>Listen to <a href="https://open.spotify.com/album/3I2aN4C0clBSM8I1DmoIsN">Good Music</a></h1>"
+TITLE = "<h1><center>JoyCaption Alpha One </center><br><center>Listen to <a href='https://open.spotify.com/album/3I2aN4C0clBSM8I1DmoIsN'>Good Music</a></h1>"
 CAPTION_TYPE_MAP = {
 	("descriptive", "formal", False, False): ["Write a descriptive caption for this image in a formal tone."],
 	("descriptive", "formal", False, True): ["Write a descriptive caption for this image in a formal tone within {word_count} words."],
