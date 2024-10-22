@@ -14,21 +14,6 @@ from cached_path import cached_path
 from pydub import AudioSegment
 import subprocess
 
-try:
-    import spaces
-
-    USING_SPACES = True
-except ImportError:
-    USING_SPACES = False
-
-
-def gpu_decorator(func):
-    if USING_SPACES:
-        return spaces.GPU(func)
-    else:
-        return func
-
-
 from model import DiT, UNetT
 from model.utils import (
     save_spectrogram,
@@ -54,6 +39,44 @@ E2TTS_model_cfg = dict(dim=1024, depth=24, heads=16, ff_mult=4)
 E2TTS_ema_model = load_model(
     UNetT, E2TTS_model_cfg, str(cached_path("hf://SWivid/E2-TTS/E2TTS_Base/model_1200000.safetensors"))
 )
+
+#****************************************
+def get_speaker_files():
+    speaker_dir = Path("./speakers")
+    speaker_files = [f.stem for f in speaker_dir.glob("*.wav")]
+    return {f: str(speaker_dir / f"{f}.wav") for f in speaker_files}
+
+def update_reference_audio(speaker):
+    return speaker_files[speaker]
+    
+def infer(ref_audio, ref_text, gen_text, model_choice, remove_silence, cross_fade_duration):
+    sample_rate = 22050
+    duration = 5  # seconds
+    t = np.linspace(0, duration, int(sample_rate * duration), False)
+    audio = np.sin(2 * np.pi * 440 * t)  # 440 Hz sine wave
+    
+    # Generate spectrogram
+    D = librosa.stft(audio)
+    S_db = librosa.amplitude_to_db(np.abs(D), ref=np.max)
+    
+    fig, ax = plt.subplots()
+    img = librosa.display.specshow(S_db, x_axis='time', y_axis='hz', ax=ax)
+    fig.colorbar(img, ax=ax, format="%+2.0f dB")
+    ax.set_title('Spectrogram')
+    
+    # Save spectrogram to a file
+    spectrogram_path = "spectrogram.png"
+    plt.savefig(spectrogram_path)
+    plt.close(fig)
+    
+    return (sample_rate, audio), spectrogram_path
+
+def update_speed(speed):
+    # Your existing update_speed function implementation
+    pass
+    
+speaker_files = get_speaker_files()
+
 # ***************************************
 def timestamp_to_seconds(timestamp):
     """Convert timestamp to seconds"""
@@ -257,7 +280,6 @@ with gr.Blocks() as app_youtube:
 
 #*********************************
 
-@gpu_decorator
 def infer(ref_audio_orig, ref_text, gen_text, model, remove_silence, cross_fade_duration=0.15, speed=1):
     ref_audio, ref_text = preprocess_ref_audio_text(ref_audio_orig, ref_text, show_info=gr.Info)
 
@@ -293,7 +315,6 @@ def infer(ref_audio_orig, ref_text, gen_text, model, remove_silence, cross_fade_
     return (final_sample_rate, final_wave), spectrogram_path
 
 
-@gpu_decorator
 def generate_podcast(
     script, speaker1_name, ref_audio1, ref_text1, speaker2_name, ref_audio2, ref_text2, model, remove_silence
 ):
@@ -377,13 +398,23 @@ with gr.Blocks() as app_credits:
 * [mrfakename](https://github.com/fakerybakery) for the original [online demo](https://huggingface.co/spaces/mrfakename/E2-F5-TTS)
 * [RootingInLoad](https://github.com/RootingInLoad) for the podcast generation
 * [jpgallegoar](https://github.com/jpgallegoar) for multiple speech-type generation
+* [Cognibuild](https://www.cognibuild.ai) to a MUCH lesser level for the mere downloader and speaker pack integration
 """)
 with gr.Blocks() as app_tts:
     gr.Markdown("# Batched TTS")
+    
+    speaker_dropdown = gr.Dropdown(
+        choices=list(speaker_files.keys()),
+        label="Choose Speaker",
+        type="value"
+    )
     ref_audio_input = gr.Audio(label="Reference Audio", type="filepath")
     gen_text_input = gr.Textbox(label="Text to Generate", lines=10)
-    model_choice = gr.Radio(choices=["F5-TTS", "E2-TTS"], label="Choose TTS Model", value="F5-TTS")
+    model_choice = gr.Radio(
+        choices=["F5-TTS", "E2-TTS"], label="Choose TTS Model", value="F5-TTS"
+    )
     generate_btn = gr.Button("Synthesize", variant="primary")
+    
     with gr.Accordion("Advanced Settings", open=False):
         ref_text_input = gr.Textbox(
             label="Reference Text",
@@ -399,7 +430,7 @@ with gr.Blocks() as app_tts:
             label="Speed",
             minimum=0.3,
             maximum=2.0,
-            value=1.0,
+            value=1.0,  # Assuming default speed is 1.0
             step=0.1,
             info="Adjust the speed of the audio.",
         )
@@ -411,10 +442,18 @@ with gr.Blocks() as app_tts:
             step=0.01,
             info="Set the duration of the cross-fade between audio clips.",
         )
-
+    
+    speed_slider.change(update_speed, inputs=speed_slider)
     audio_output = gr.Audio(label="Synthesized Audio")
     spectrogram_output = gr.Image(label="Spectrogram")
-
+    
+    # Update reference audio when a speaker is selected
+    speaker_dropdown.change(
+        update_reference_audio,
+        inputs=[speaker_dropdown],
+        outputs=[ref_audio_input]
+    )
+    
     generate_btn.click(
         infer,
         inputs=[
@@ -424,42 +463,81 @@ with gr.Blocks() as app_tts:
             model_choice,
             remove_silence,
             cross_fade_duration_slider,
-            speed_slider,
         ],
         outputs=[audio_output, spectrogram_output],
     )
 
-with gr.Blocks() as app_podcast:
-    gr.Markdown("# Podcast Generation")
-    speaker1_name = gr.Textbox(label="Speaker 1 Name")
-    ref_audio_input1 = gr.Audio(label="Reference Audio (Speaker 1)", type="filepath")
-    ref_text_input1 = gr.Textbox(label="Reference Text (Speaker 1)", lines=2)
+def podcast_generation(script, speaker1, ref_audio1, ref_text1, speaker2, ref_audio2, ref_text2, model, remove_silence):
+    return generate_podcast(script, speaker1, ref_audio1, ref_text1, speaker2, ref_audio2, ref_text2, model, remove_silence)
 
-    speaker2_name = gr.Textbox(label="Speaker 2 Name")
-    ref_audio_input2 = gr.Audio(label="Reference Audio (Speaker 2)", type="filepath")
-    ref_text_input2 = gr.Textbox(label="Reference Text (Speaker 2)", lines=2)
-
-    script_input = gr.Textbox(
-        label="Podcast Script",
-        lines=10,
-        placeholder="Enter the script with speaker names at the start of each block, e.g.:\nSean: How did you start studying...\n\nMeghan: I came to my interest in technology...\nIt was a long journey...\n\nSean: That's fascinating. Can you elaborate...",
+    generate_podcast_btn.click(
+        podcast_generation,
+        inputs=[
+            script_input,
+            speaker1_name,
+            ref_audio_input1,
+            ref_text_input1,
+            speaker2_name,
+            ref_audio_input2,
+            ref_text_input2,
+            podcast_model_choice,
+            podcast_remove_silence,
+        ],
+        outputs=podcast_output,
     )
 
-    podcast_model_choice = gr.Radio(choices=["F5-TTS", "E2-TTS"], label="Choose TTS Model", value="F5-TTS")
+with gr.Blocks() as app_podcast:
+    gr.Markdown("# Podcast Generation")
+    
+    with gr.Row():
+        with gr.Column():
+            speaker1_name = gr.Textbox(label="Speaker 1 Name")
+            speaker1_dropdown = gr.Dropdown(
+                choices=list(speaker_files.keys()),
+                label="Choose Speaker 1",
+                type="value"
+            )
+            ref_audio_input1 = gr.Audio(label="Reference Audio (Speaker 1)", type="filepath")
+            ref_text_input1 = gr.Textbox(label="Reference Text (Speaker 1)", lines=2)
+        
+        with gr.Column():
+            speaker2_name = gr.Textbox(label="Speaker 2 Name")
+            speaker2_dropdown = gr.Dropdown(
+                choices=list(speaker_files.keys()),
+                label="Choose Speaker 2",
+                type="value"
+            )
+            ref_audio_input2 = gr.Audio(label="Reference Audio (Speaker 2)", type="filepath")
+            ref_text_input2 = gr.Textbox(label="Reference Text (Speaker 2)", lines=2)
+    
+    script_input = gr.Textbox(
+        label="Podcast Script", 
+        lines=10, 
+        placeholder="Enter the script with speaker names at the start of each block, e.g.:\nSean: How did you start studying...\n\nMeghan: I came to my interest in technology...\nIt was a long journey...\n\nSean: That's fascinating. Can you elaborate..."
+    )
+    
+    podcast_model_choice = gr.Radio(
+        choices=["F5-TTS", "E2-TTS"], label="Choose TTS Model", value="F5-TTS"
+    )
     podcast_remove_silence = gr.Checkbox(
         label="Remove Silences",
         value=True,
     )
     generate_podcast_btn = gr.Button("Generate Podcast", variant="primary")
     podcast_output = gr.Audio(label="Generated Podcast")
-
-    def podcast_generation(
-        script, speaker1, ref_audio1, ref_text1, speaker2, ref_audio2, ref_text2, model, remove_silence
-    ):
-        return generate_podcast(
-            script, speaker1, ref_audio1, ref_text1, speaker2, ref_audio2, ref_text2, model, remove_silence
-        )
-
+    
+    # Update reference audio when speakers are selected
+    speaker1_dropdown.change(
+        update_reference_audio,
+        inputs=[speaker1_dropdown],
+        outputs=[ref_audio_input1]
+    )
+    speaker2_dropdown.change(
+        update_reference_audio,
+        inputs=[speaker2_dropdown],
+        outputs=[ref_audio_input2]
+    )
+    
     generate_podcast_btn.click(
         podcast_generation,
         inputs=[
@@ -646,7 +724,6 @@ with gr.Blocks() as app_emotional:
     # Output audio
     audio_output_emotional = gr.Audio(label="Synthesized Audio")
 
-    @gpu_decorator
     def generate_emotional_speech(
         regular_audio,
         regular_ref_text,
@@ -755,7 +832,10 @@ with gr.Blocks() as app_emotional:
 with gr.Blocks() as app:
     gr.Markdown(
         """
-# E2/F5 TTS
+# E2/F5 TTS *PLUS* 
+[Cognibuild Edition](www.patreon.com/cognibuild)
+This edition has a Video Downloader w/ Trimmer, and 150 speaker pack
+* [Listen to Good Music](https://open.spotify.com/artist/0oH5qisu13DpnT7DucnV9d)
 
 This is a local web UI for F5 TTS with advanced batch processing support. This app supports the following TTS models:
 
@@ -790,7 +870,4 @@ def main(port, host, share, api):
 
 
 if __name__ == "__main__":
-    if not USING_SPACES:
-        main()
-    else:
-        app.queue().launch()
+    app.queue().launch()
