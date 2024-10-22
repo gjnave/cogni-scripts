@@ -394,7 +394,7 @@ with gr.Blocks() as app_credits:
 * [mrfakename](https://github.com/fakerybakery) for the original [online demo](https://huggingface.co/spaces/mrfakename/E2-F5-TTS)
 * [RootingInLoad](https://github.com/RootingInLoad) for the podcast generation
 * [jpgallegoar](https://github.com/jpgallegoar) for multiple speech-type generation
-* [Cognibuild](https://www.cognibuild.ai) for the Youtube Download and Speaker Pack Integration
+* [Cognibuild](https://www.cognibuild.ai) (to a MUCH lesser extent) for the Youtube Download and Speaker Pack Integration
 """)
 def get_speaker_files():
     speaker_dir = Path("./speakers")
@@ -1000,7 +1000,10 @@ with gr.Blocks() as app_emotional:
 with gr.Blocks() as app:
     gr.Markdown(
         """
-# E2/F5 TTS
+# E2/F5 TTS-PLUS [Cognibuild Edition](https://www.patreon.com/cognibuild) 
+  This edition adds a YouTube Downloader, Video Trimmer, and a 150 speaker pack
+* [Listen to Good Music](https://open.spotify.com/artist/0oH5qisu13DpnT7DucnV9d)
+
 
 This is a local web UI for F5 TTS with advanced batch processing support. This app supports the following TTS models:
 
