@@ -96,7 +96,7 @@ def generate_animation(
             logger.info("Loading VAE...")
             vaeloader = NODE_CLASS_MAPPINGS["VAELoader"]()
             vae = vaeloader.load_vae(
-                vae_name="vaeFtMse840000EmaPruned_vaeFtMse840k.safetensors"
+                vae_name="vae-ft-mse-840000-ema-pruned.safetensors"
             )
 
             # Load checkpoint using the selected checkpoint from the dropdown
