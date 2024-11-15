@@ -2,7 +2,6 @@ import numpy as np
 import gradio as gr
 from bark import SAMPLE_RATE, generate_audio, preload_models
 from bark.generation import SUPPORTED_LANGS
-from share_btn import community_icon_html, loading_icon_html, share_js
 
 DEBUG_MODE = False
 
@@ -21,7 +20,7 @@ PROMPT_LOOKUP["Announcer"] = "announcer"
 
 default_text = "Hello, my name is Suno. And, uh — and I like pizza. [laughs]\nBut I also have other interests such as playing tic tac toe."
 
-title = "# 🐶 Bark</div>"
+title = "# 🐶 Bark"
 
 description = """
 Bark is a universal text-to-audio model created by [Suno](www.suno.ai), with code publicly available [here](https://github.com/suno-ai/bark). \
@@ -33,7 +32,6 @@ Use at your own risk.
 """
 
 article = """
-
 ## 🌎 Foreign Language
 
 Bark supports various languages out-of-the-box and automatically determines language from input text. \
@@ -99,91 +97,82 @@ MAN: Wow, that's expensive!
 
 Bark model by [Suno](https://suno.ai/), including official [code](https://github.com/suno-ai/bark) and model weights. \
 Gradio demo supported by 🤗 Hugging Face. Bark is licensed under a non-commercial license: CC-BY 4.0 NC, see details on [GitHub](https://github.com/suno-ai/bark).
-
-
 """
 
-examples = [
-    ["Please surprise me and speak in whatever voice you enjoy. Vielen Dank und Gesundheit!",
-        "Unconditional"],  # , 0.7, 0.7],
-    ["Hello, my name is Suno. And, uh — and I like pizza. [laughs] But I also have other interests such as playing tic tac toe.",
-        "Speaker 1 (en)"],  # , 0.7, 0.7],
-    ["Buenos días Miguel. Tu colega piensa que tu alemán es extremadamente malo. But I suppose your english isn't terrible.",
-        "Speaker 0 (es)"],  # , 0.7, 0.7],
-]
-
-
-def gen_tts(text, history_prompt):  # , temp_semantic, temp_waveform):
+def gen_tts(text, history_prompt):
     history_prompt = PROMPT_LOOKUP[history_prompt]
     if DEBUG_MODE:
         audio_arr = np.zeros(SAMPLE_RATE)
     else:
-        # , text_temp=temp_semantic, waveform_temp=temp_waveform)
         audio_arr = generate_audio(text, history_prompt=history_prompt)
     audio_arr = (audio_arr * 32767).astype(np.int16)
     return (SAMPLE_RATE, audio_arr)
 
-
 css = """
-        #share-btn-container {
-            display: flex;
-            padding-left: 0.5rem !important;
-            padding-right: 0.5rem !important;
-            background-color: #000000;
-            justify-content: center;
-            align-items: center;
-            border-radius: 9999px !important; 
-            width: 13rem;
-            margin-top: 10px;
-            margin-left: auto;
-            flex: unset !important;
-        }
-        #share-btn {
-            all: initial;
-            color: #ffffff;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'IBM Plex Sans', sans-serif;
-            margin-left: 0.5rem !important;
-            padding-top: 0.25rem !important;
-            padding-bottom: 0.25rem !important;
-            right:0;
-        }
-        #share-btn * {
-            all: unset !important;
-        }
-        #share-btn-container div:nth-child(-n+2){
-            width: auto !important;
-            min-height: 0px !important;
-        }
-        #share-btn-container .wrap {
-            display: none !important;
-        }
+#share-btn-container {
+    display: flex;
+    padding: 0.5rem;
+    background-color: #000000;
+    justify-content: center;
+    align-items: center;
+    border-radius: 9999px;
+    width: 13rem;
+    margin-top: 10px;
+    margin-left: auto;
+}
 """
+
 with gr.Blocks(css=css) as block:
     gr.Markdown(title)
     gr.Markdown(description)
+    
     with gr.Row():
         with gr.Column():
             input_text = gr.Textbox(
-                label="Input Text", lines=2, value=default_text, elem_id="input_text")
+                label="Input Text", 
+                lines=2, 
+                value=default_text
+            )
             options = gr.Dropdown(
-                AVAILABLE_PROMPTS, value="Speaker 1 (en)", label="Acoustic Prompt", elem_id="speaker_option")
-            run_button = gr.Button(text="Generate Audio", type="button")
+                AVAILABLE_PROMPTS,
+                value="Speaker 1 (en)",
+                label="Acoustic Prompt"
+            )
+            run_button = gr.Button(
+                text="Generate Audio",
+                variant="primary"
+            )
+            
         with gr.Column():
-            audio_out = gr.Audio(label="Generated Audio",
-                                 type="numpy", elem_id="audio_out")
-            with gr.Row(visible=False) as share_row:
-                with gr.Group(elem_id="share-btn-container"):
-                    loading_icon = gr.HTML(loading_icon_html)
-    inputs = [input_text, options]
-    outputs = [audio_out]
-    gr.Examples(examples=examples, fn=gen_tts, inputs=inputs,
-                outputs=outputs, cache_examples=True)
-    gr.Markdown(article)
-    run_button.click(fn=lambda: gr.update(visible=False), inputs=None, outputs=share_row, queue=False).then(
-        fn=gen_tts, inputs=inputs, outputs=outputs, queue=True).then(
-        fn=lambda: gr.update(visible=True), inputs=None, outputs=share_row, queue=False)
+            audio_out = gr.Audio(
+                label="Generated Audio",
+                type="numpy"
+            )
+    
+    examples = [
+        ["Please surprise me and speak in whatever voice you enjoy. Vielen Dank und Gesundheit!", "Unconditional"],
+        ["Hello, my name is Suno. And, uh — and I like pizza. [laughs]", "Speaker 1 (en)"],
+        ["Buenos días Miguel. Tu colega piensa que tu alemán es extremadamente malo.", "Speaker 0 (es)"],
+    ]
+    
+    # Simplified event handling
+    run_button.click(
+        fn=gen_tts,
+        inputs=[input_text, options],
+        outputs=audio_out,
+        api_name="generate"
+    )
+    
+    gr.Examples(
+        examples=examples,
+        fn=gen_tts,
+        inputs=[input_text, options],
+        outputs=audio_out,
+        cache_examples=True
+    )
 
-block.queue()
-block.launch()
+    # Add the article content at the bottom
+    gr.Markdown(article)
+
+if __name__ == "__main__":
+    block.launch(debug=True)
