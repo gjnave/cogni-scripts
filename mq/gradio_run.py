@@ -15,6 +15,7 @@ import requests
 from MagicQuill import folder_paths
 from MagicQuill.llava_new import LLaVAModel
 from MagicQuill.scribble_color_edit import ScribbleColorEditModel
+from datetime import datetime
 
 llavaModel = LLaVAModel()
 scribbleColorEditModel = ScribbleColorEditModel()
@@ -108,6 +109,34 @@ def guess_prompt_handler(original_image, add_color_image, add_edge_image):
     add_edge_mask = create_alpha_mask(add_edge_image) if add_edge_image else torch.zeros((1, height, width), dtype=torch.float32, device="cpu")
     res = guess(original_image_tensor, add_color_image_tensor, add_edge_mask)
     return res
+    
+def save_generated_image(image_base64):
+    """Save the generated image to disk with timestamp."""
+    try:
+        # Remove data URL prefix if present
+        if image_base64.startswith("data:image/png;base64,"):
+            image_base64 = image_base64.split(",")[1]
+            
+        # Decode base64 to image
+        image_data = base64.b64decode(image_base64)
+        image = Image.open(io.BytesIO(image_data))
+        
+        # Generate filename with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"generated_image_{timestamp}.png"
+        
+        # Create output directory if it doesn't exist
+        output_dir = "generated_images"
+        os.makedirs(output_dir, exist_ok=True)
+        
+        # Save image
+        filepath = os.path.join(output_dir, filename)
+        image.save(filepath, "PNG")
+        return filepath
+    except Exception as e:
+        print(f"Error saving image: {e}")
+        return None
+
 
 def generate(ckpt_name, total_mask, original_image, add_color_image, add_edge_image, remove_edge_image, positive_prompt, negative_prompt, grow_size, stroke_as_edge, fine_edge, edge_strength, color_strength, inpaint_strength, seed, steps, cfg, sampler_name, scheduler):
     add_color_image, original_image, total_mask, add_edge_mask, remove_edge_mask = prepare_images_and_masks(total_mask, original_image, add_color_image, add_edge_image, remove_edge_image)
@@ -192,10 +221,13 @@ with gr.Blocks(css=css) as demo:
         ms = MagicQuill()
     with gr.Row(elem_classes="row"):
         with gr.Column():
-            btn = gr.Button("Run", variant="primary")
+            gen_btn = gr.Button("Generate", variant="primary")
+            save_btn = gr.Button("Save Image", variant="secondary")
+            save_status = gr.Textbox(label="Save Status", interactive=False)
         with gr.Column():
             with gr.Accordion("parameters", open=False):
-                default_model = "SD1.5\\realisticVisionV60B1_v51VAE.safetensors"; ckpt_name = gr.Dropdown(
+                default_model = "SD1.5\\realisticVisionV60B1_v51VAE.safetensors"
+                ckpt_name = gr.Dropdown(
                     label="Base Model Name",
                     choices=folder_paths.get_filename_list("checkpoints"),
                     value='SD1.5\\realisticVisionV60B1_v51VAE.safetensors',
@@ -284,7 +316,27 @@ with gr.Blocks(css=css) as demo:
                     interactive=True
                 )
 
-        btn.click(generate_image_handler, inputs=[ms, ckpt_name, negative_prompt, fine_edge, grow_size, edge_strength, color_strength, inpaint_strength, seed, steps, cfg, sampler_name, scheduler], outputs=ms)
+    def save_current_image(ms):
+        if not ms or not ms.get('from_backend', {}).get('generated_image'):
+            return "No image to save"
+        
+        saved_path = save_generated_image(ms['from_backend']['generated_image'])
+        if saved_path:
+            return f"Image saved successfully at: {saved_path}"
+        return "Failed to save image"
+
+    gen_btn.click(
+        generate_image_handler,
+        inputs=[ms, ckpt_name, negative_prompt, fine_edge, grow_size, edge_strength, 
+               color_strength, inpaint_strength, seed, steps, cfg, sampler_name, scheduler],
+        outputs=ms
+    )
+    
+    save_btn.click(
+        save_current_image,
+        inputs=[ms],
+        outputs=save_status
+    )
 
 app = FastAPI()
 
