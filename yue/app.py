@@ -1,0 +1,343 @@
+import os
+import sys
+import gradio as gr
+import torch
+from huggingface_hub import hf_hub_download
+from transformers import AutoModel
+import subprocess
+import tempfile
+import soundfile as sf
+import librosa
+from pathlib import Path
+import platform
+
+class YuEInterface:
+    def __init__(self):
+        # Debug print for environment
+        print(f"Platform: {platform.system()}")
+        print(f"Current working directory: {os.getcwd()}")
+        
+        # Convert Windows-style paths to WSL paths if needed
+        if "microsoft-standard-WSL" in platform.release():
+            print("Running in WSL environment")
+            self.base_path = Path("/mnt/d/staging/yue/yuewsl/yue")  # Adjusted based on your path
+        else:
+            self.base_path = Path(os.getcwd()) / "yue"
+            
+        print(f"Base path: {self.base_path}")
+        
+        self.inference_path = self.base_path / "inference"
+        self.output_dir = self.base_path / "output"
+        self.prompt_dir = self.base_path / "prompt_egs"
+        
+        # Create directories if they don't exist
+        self._validate_directory_structure()
+
+    def _validate_directory_structure(self):
+        """Validate and create necessary directories"""
+        print("Validating directory structure...")
+        required_dirs = [self.base_path, self.inference_path, self.output_dir, self.prompt_dir]
+        
+        for directory in required_dirs:
+            print(f"Checking directory: {directory}")
+            if not directory.exists():
+                try:
+                    directory.mkdir(parents=True, exist_ok=True)
+                    print(f"Created directory: {directory}")
+                except Exception as e:
+                    print(f"Error creating directory {directory}: {str(e)}")
+                    raise RuntimeError(f"Failed to create directory {directory}: {str(e)}")
+        
+        # Verify inference script exists
+        infer_script = self.inference_path / "infer.py"
+        print(f"Checking for inference script at: {infer_script}")
+        if not infer_script.exists():
+            raise FileNotFoundError(f"Inference script not found at {infer_script}")
+        print("Directory structure validation complete")
+
+    def _get_latest_generated_file(self):
+        """Helper method to get the latest generated WAV file"""
+        generated_files = list(self.output_dir.glob("*.wav"))
+        if not generated_files:
+            return None
+        return max(generated_files, key=lambda x: x.stat().st_mtime)
+
+    def _prepare_audio_for_gradio(self, audio_path):
+        """Helper method to prepare audio file for Gradio interface"""
+        try:
+            if audio_path is None or not os.path.exists(audio_path):
+                return None, "No output file found"
+            
+            # Load the audio file using soundfile
+            audio_data, samplerate = sf.read(audio_path)
+            
+            # Return the path and a success message
+            # Gradio will handle the file reading when given a valid path
+            return str(audio_path), "Generation successful"
+        except Exception as e:
+            print(f"Error preparing audio: {str(e)}")
+            return None, f"Error preparing audio: {str(e)}"
+            
+            
+    def save_text_files(self, genre, lyrics):
+        """Save genre and lyrics to text files"""
+        try:
+            genre_path = self.prompt_dir / "genre.txt"
+            lyrics_path = self.prompt_dir / "lyrics.txt"
+            
+            print(f"Saving genre to: {genre_path}")
+            print(f"Saving lyrics to: {lyrics_path}")
+            
+            genre_path.write_text(genre)
+            lyrics_path.write_text(lyrics)
+            
+            return str(genre_path), str(lyrics_path)
+        except Exception as e:
+            print(f"Error in save_text_files: {str(e)}")
+            raise RuntimeError(f"Failed to save text files: {str(e)}")
+
+    def generate_music_cot(self, genre, lyrics, n_segments, batch_size):
+        """Generate music using Chain of Thought mode"""
+        try:
+            print("Starting CoT generation...")
+            genre_path, lyrics_path = self.save_text_files(genre, lyrics)
+            
+            # Convert paths to strings and ensure they use forward slashes
+            inference_script = str(self.inference_path / "infer.py").replace('\\', '/')
+            output_dir = str(self.output_dir).replace('\\', '/')
+            genre_path = str(genre_path).replace('\\', '/')
+            lyrics_path = str(lyrics_path).replace('\\', '/')
+            
+            print(f"Using inference script at: {inference_script}")
+            print(f"Output directory: {output_dir}")
+            
+            command = [
+                "python3" if platform.system() == "Linux" else sys.executable,
+                inference_script,
+                "--cuda_idx", "0",
+                "--stage1_model", "m-a-p/YuE-s1-7B-anneal-en-cot",
+                "--stage2_model", "m-a-p/YuE-s2-1B-general",
+                "--genre_txt", genre_path,
+                "--lyrics_txt", lyrics_path,
+                "--run_n_segments", str(n_segments),
+                "--stage2_batch_size", str(batch_size),
+                "--output_dir", output_dir,
+                "--max_new_tokens", "3000",
+                "--repetition_penalty", "1.1"
+            ]
+            
+            print(f"Running command: {' '.join(command)}")
+            
+            process = subprocess.Popen(
+                command,
+                cwd=str(self.inference_path),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                env=os.environ.copy()
+            )
+            
+            stdout, stderr = process.communicate()
+            print(f"Process output: {stdout}")
+            if stderr:
+                print(f"Process errors: {stderr}")
+            
+            if process.returncode != 0:
+                return None, f"Error during generation: {stderr}"
+            
+            # Wait a brief moment to ensure file writing is complete
+            import time
+            time.sleep(2)
+            
+            # Get the latest generated file
+            latest_file = self._get_latest_generated_file()
+            if latest_file is None:
+                return None, "No output file generated"
+            
+            # Prepare the audio for Gradio
+            return self._prepare_audio_for_gradio(str(latest_file))
+            
+        except Exception as e:
+            print(f"Error in generate_music_cot: {str(e)}")
+            return None, f"Error: {str(e)}"
+
+    def generate_music_icl(self, genre, lyrics, n_segments, batch_size, 
+                         use_dual_tracks=False, vocal_track=None, instrumental_track=None,
+                         single_track=None, start_time=0, end_time=30):
+        """Generate music using In-Context Learning mode"""
+        try:
+            print("Starting ICL generation...")
+            genre_path, lyrics_path = self.save_text_files(genre, lyrics)
+            
+            
+            # Convert paths to strings and ensure they use forward slashes
+            inference_script = str(self.inference_path / "infer.py").replace('\\', '/')
+            output_dir = str(self.output_dir).replace('\\', '/')
+            genre_path = str(genre_path).replace('\\', '/')
+            lyrics_path = str(lyrics_path).replace('\\', '/')
+            
+            command = [
+                "python3" if platform.system() == "Linux" else sys.executable,
+                inference_script,
+                "--cuda_idx", "0",
+                "--stage1_model", "m-a-p/YuE-s1-7B-anneal-en-icl",
+                "--stage2_model", "m-a-p/YuE-s2-1B-general",
+                "--genre_txt", genre_path,
+                "--lyrics_txt", lyrics_path,
+                "--run_n_segments", str(n_segments),
+                "--stage2_batch_size", str(batch_size),
+                "--output_dir", output_dir,
+                "--max_new_tokens", "3000",
+                "--repetition_penalty", "1.1"
+            ]
+            
+            if use_dual_tracks and vocal_track and instrumental_track:
+                vocal_path = str(vocal_track).replace('\\', '/')
+                instrumental_path = str(instrumental_track).replace('\\', '/')
+                command.extend([
+                    "--use_dual_tracks_prompt",
+                    "--vocal_track_prompt_path", vocal_path,
+                    "--instrumental_track_prompt_path", instrumental_path,
+                    "--prompt_start_time", str(start_time),
+                    "--prompt_end_time", str(end_time)
+                ])
+            elif single_track:
+                single_track_path = str(single_track).replace('\\', '/')
+                command.extend([
+                    "--use_audio_prompt",
+                    "--audio_prompt_path", single_track_path,
+                    "--prompt_start_time", str(start_time),
+                    "--prompt_end_time", str(end_time)
+                ])
+            
+            print(f"Running command: {' '.join(command)}")
+            
+            process = subprocess.Popen(
+                command,
+                cwd=str(self.inference_path),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                env=os.environ.copy()
+            )
+            
+            stdout, stderr = process.communicate()
+            print(f"Process output: {stdout}")
+            if stderr:
+                print(f"Process errors: {stderr}")
+            
+            if process.returncode != 0:
+                return None, f"Error during generation: {stderr}"
+            
+            import time
+            time.sleep(2)
+            
+            # Get the latest generated file
+            latest_file = self._get_latest_generated_file()
+            if latest_file is None:
+                return None, "No output file generated"
+            
+            # Prepare the audio for Gradio
+            return self._prepare_audio_for_gradio(str(latest_file))
+            
+        except Exception as e:
+            print(f"Error in generate_music_icl: {str(e)}")
+            return None, f"Error: {str(e)}"
+
+def create_interface():
+    try:
+        yue = YuEInterface()
+        
+        with gr.Blocks() as demo:
+            gr.Markdown("# YuE Music Generation Interface")
+            
+            with gr.Tabs():
+                # Chain of Thought (CoT) Tab
+                with gr.Tab("Normal Generation (CoT)"):
+                    with gr.Column():
+                        genre_input = gr.Textbox(label="Genre", placeholder="Enter genre description...")
+                        lyrics_input = gr.Textbox(label="Lyrics", placeholder="Enter lyrics...", lines=5)
+                        n_segments = gr.Slider(minimum=1, maximum=10, value=2, step=1, label="Number of Segments")
+                        batch_size = gr.Slider(minimum=1, maximum=8, value=4, step=1, label="Batch Size")
+                        generate_btn = gr.Button("Generate Music")
+                        output_audio = gr.Audio(label="Generated Music")
+                        status_text = gr.Textbox(label="Status", interactive=False)
+                        
+                    generate_btn.click(
+                        fn=yue.generate_music_cot,
+                        inputs=[genre_input, lyrics_input, n_segments, batch_size],
+                        outputs=[output_audio, status_text]
+                    )
+                
+                # In-Context Learning (ICL) Tab
+                with gr.Tab("In-Context Learning (ICL)"):
+                    with gr.Column():
+                        icl_genre_input = gr.Textbox(label="Genre", placeholder="Enter genre description...")
+                        icl_lyrics_input = gr.Textbox(label="Lyrics", placeholder="Enter lyrics...", lines=5)
+                        icl_n_segments = gr.Slider(minimum=1, maximum=10, value=2, step=1, label="Number of Segments")
+                        icl_batch_size = gr.Slider(minimum=1, maximum=8, value=4, step=1, label="Batch Size")
+                        
+                        use_dual_tracks = gr.Checkbox(label="Use Dual Tracks")
+                        
+                        with gr.Column(visible=False) as dual_track_inputs:
+                            vocal_track = gr.Audio(label="Vocal Track (30s)", type="filepath")
+                            instrumental_track = gr.Audio(label="Instrumental Track (30s)", type="filepath")
+                        
+                        with gr.Column(visible=False) as single_track_inputs:
+                            single_track = gr.Audio(label="Single Track (30s)", type="filepath")
+                        
+                        start_time = gr.Number(label="Start Time (seconds)", value=0)
+                        end_time = gr.Number(label="End Time (seconds)", value=30)
+                        
+                        icl_generate_btn = gr.Button("Generate Music")
+                        icl_output_audio = gr.Audio(label="Generated Music")
+                        icl_status_text = gr.Textbox(label="Status", interactive=False)
+                        
+                    def toggle_track_inputs(use_dual):
+                        return {
+                            dual_track_inputs: use_dual,
+                            single_track_inputs: not use_dual
+                        }
+                    
+                    use_dual_tracks.change(
+                        fn=toggle_track_inputs,
+                        inputs=[use_dual_tracks],
+                        outputs=[dual_track_inputs, single_track_inputs]
+                    )
+                    
+                    def generate_icl_wrapper(*args):
+                        use_dual = args[4]
+                        if use_dual:
+                            return yue.generate_music_icl(
+                                genre=args[0], lyrics=args[1], n_segments=args[2], batch_size=args[3],
+                                use_dual_tracks=True, vocal_track=args[5], instrumental_track=args[6],
+                                start_time=args[7], end_time=args[8]
+                            )
+                        else:
+                            return yue.generate_music_icl(
+                                genre=args[0], lyrics=args[1], n_segments=args[2], batch_size=args[3],
+                                single_track=args[5], start_time=args[7], end_time=args[8]
+                            )
+                    
+                    icl_generate_btn.click(
+                        fn=generate_icl_wrapper,
+                        inputs=[
+                            icl_genre_input, icl_lyrics_input, icl_n_segments, icl_batch_size,
+                            use_dual_tracks, vocal_track, instrumental_track,
+                            start_time, end_time
+                        ],
+                        outputs=[icl_output_audio, icl_status_text]
+                    )
+            
+        return demo
+        
+    except Exception as e:
+        print(f"Error creating interface: {str(e)}")
+        return None
+
+if __name__ == "__main__":
+    demo = create_interface()
+    if demo is not None:
+        demo.launch(debug=True)
+    else:
+        print("Failed to create interface")
