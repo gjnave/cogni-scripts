@@ -18,13 +18,8 @@ class YuEInterface:
         print(f"Platform: {platform.system()}")
         print(f"Current working directory: {os.getcwd()}")
 
-        # Convert Windows-style paths to WSL paths if needed
-        if "microsoft-standard-WSL" in platform.release():
-            print("Running in WSL environment")
-            self.base_path = Path("/mnt/d/staging/yue/yuewsl/yue")  # Adjusted based on your path
-        else:
-            self.base_path = Path(os.getcwd()) / "yue"
-
+        # Get the base path from environment variable or use current directory as fallback
+        self.base_path = Path(os.getenv("YUE_BASE_PATH", os.getcwd()))
         print(f"Base path: {self.base_path}")
 
         self.inference_path = self.base_path / "inference"
@@ -269,12 +264,13 @@ class YuEInterface:
             print(f"Error in generate_music_icl: {str(e)}")
             return None, f"Error: {str(e)}"
             
-def check_generated_files(output_dir):
+def check_generated_files():
     """
     Check for generated .mp3 files in the output directory and print their details.
     """
-    # Convert output_dir to a Path object
-    output_dir = Path(output_dir)
+    # Get the base path from environment variable or use current directory as fallback
+    base_path = Path(os.getenv("YUE_BASE_PATH", os.getcwd()))
+    output_dir = base_path / "output"
     
     # Check if the directory exists
     if not output_dir.exists():
@@ -405,16 +401,11 @@ def create_interface():
         return None
 
 if __name__ == "__main__":
-    
-    
-    
     print(f"*********************************")
 
-    # Set the output directory path
-    output_directory = "/mnt/d/staging/yue/yuewsl/yue/output"
-
     # Run the check
-    check_generated_files(output_directory)
+    check_generated_files()
+    
     demo = create_interface()
     if demo is not None:
         demo.launch(debug=True)
