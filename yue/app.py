@@ -311,7 +311,7 @@ def create_interface():
                 with gr.Tab("Normal Generation (CoT)"):
                     with gr.Column():
                         genre_input = gr.Textbox(label="Genre", placeholder="Enter genre description...")
-                        lyrics_input = gr.Textbox(label="Lyrics", placeholder="Enter lyrics...", lines=5)
+                        lyrics_input = gr.Textbox(label="Lyrics", placeholder="Enter lyrics: [verse1], [chorus], etc..", lines=5)
                         n_segments = gr.Slider(minimum=1, maximum=10, value=2, step=1, label="Number of Segments")
                         batch_size = gr.Slider(minimum=1, maximum=8, value=4, step=1, label="Batch Size")
                         generate_btn = gr.Button("Generate Music")
