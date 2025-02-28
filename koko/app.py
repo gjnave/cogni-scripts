@@ -164,8 +164,9 @@ This demo only showcases English, but you can directly use the model to access o
 API_OPEN = os.getenv('SPACE_ID') != 'hexgrad/Kokoro-TTS'
 API_NAME = None if API_OPEN else False
 with gr.Blocks() as app:
+    app.config = {"arbitrary_types_allowed": True}  # Add this line
     with gr.Row():
-        gr.Markdown(BANNER_TEXT, container=True)
+        gr.Markdown(BANNER_TEXT)
     with gr.Row():
         with gr.Column():
             text = gr.Textbox(label='Input Text', info=f"Up to ~500 characters per Generate, or {'∞' if CHAR_LIMIT is None else CHAR_LIMIT} characters per Stream")
@@ -188,11 +189,18 @@ with gr.Blocks() as app:
     random_btn.click(fn=get_random_quote, inputs=[], outputs=[text], api_name=API_NAME)
     gatsby_btn.click(fn=get_gatsby, inputs=[], outputs=[text], api_name=API_NAME)
     frankenstein_btn.click(fn=get_frankenstein, inputs=[], outputs=[text], api_name=API_NAME)
-    generate_btn.click(fn=generate_first, inputs=[text, voice, speed, use_gpu], outputs=[out_audio, out_ps], api_name=API_NAME)
+    from typing import Tuple
+    import numpy as np
+
+    def wrapped_generate_first(text: str, voice: str, speed: float, use_gpu: bool) -> Tuple[Tuple[int, np.ndarray], str]:
+        return generate_first(text, voice, speed, use_gpu)
+
+    # Then your button binding
+    generate_btn.click(fn=wrapped_generate_first, inputs=[text, voice, speed, use_gpu], outputs=[out_audio, out_ps], api_name=False)
     tokenize_btn.click(fn=tokenize_first, inputs=[text, voice], outputs=[out_ps], api_name=API_NAME)
     stream_event = stream_btn.click(fn=generate_all, inputs=[text, voice, speed, use_gpu], outputs=[out_stream], api_name=API_NAME)
     stop_btn.click(fn=None, cancels=stream_event)
     predict_btn.click(fn=predict, inputs=[text, voice, speed], outputs=[out_audio], api_name=API_NAME)
 
 if __name__ == '__main__':
-    app.queue(api_open=API_OPEN).launch(show_api=API_OPEN, ssr_mode=True)
+    app.queue(api_open=API_OPEN).launch(show_api=API_OPEN)
