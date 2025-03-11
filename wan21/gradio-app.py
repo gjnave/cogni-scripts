@@ -756,7 +756,7 @@ if __name__ == "__main__":
     """
 
     with gr.Blocks(css=css) as demo:
-        gr.Markdown("SECourses Wan 2.1 I2V - T2V Advanced Gradio APP V28 | Tutorial : https://youtu.be/hnAhveNy-8s | Source : https://www.patreon.com/posts/123105403", elem_classes="header")
+        gr.Markdown("Get Going Fast Wan 2.1 Gradio | Listen to Good Music : https://music.youtube.com/playlist?list=OLAK5uy_kfreUHBgq8oX4pC3uYKBZVayEa0f941DQ", elem_classes="header")
         with gr.Row():
             with gr.Column(scale=4):
                 with gr.Tab("Main Settings"):
