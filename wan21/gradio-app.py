@@ -731,7 +731,6 @@ def get_lora_choices():
 
 def refresh_lora_list():
     return gr.update(choices=get_lora_choices(), value="None")
-
 # ------------------------------
 # Gradio Interface
 # ------------------------------
@@ -756,8 +755,8 @@ if __name__ == "__main__":
     .header {text-align: center; color: #00aaff; margin-bottom: 20px;}
     """
 
-    with gr.Blocks() as demo:
-        gr.Markdown("GetGoingFast.pro WAN 2.1 I2V - T2V | [Listen to good music](https://music.youtube.com/playlist?list=OLAK5uy_kfreUHBgq8oX4pC3uYKBZVayEa0f941DQ)")
+    with gr.Blocks(css=css) as demo:
+        gr.Markdown("SECourses Wan 2.1 I2V - T2V Advanced Gradio APP V28 | Tutorial : https://youtu.be/hnAhveNy-8s | Source : https://www.patreon.com/posts/123105403", elem_classes="header")
         with gr.Row():
             with gr.Column(scale=4):
                 with gr.Tab("Main Settings"):
@@ -807,10 +806,11 @@ if __name__ == "__main__":
                     with gr.Group(elem_classes="input-section"):
                         gr.Markdown("### Advanced Configuration")
                         vram_preset_radio = gr.Radio(
-                            choices=["4GB", "6GB", "8GB", "10GB", "12GB", "16GB", "24GB", "32GB", "48GB", "80GB"],
+                            choices=["4GB", "6GB", "8GB", "10GB", "12GB", "16GB", "24GB"],  # Capped at 24GB
                             label="GPU VRAM Preset",
                             value=config_loaded.get("vram_preset", "24GB")
                         )
+                        num_persistent_text = gr.Textbox(label="Number of Persistent Parameters In Dit (VRAM)", value=config_loaded.get("num_persistent", "12000000000"))
                         torch_dtype_radio = gr.Radio(
                             choices=["torch.float8_e4m3fn", "torch.bfloat16"],
                             label="Torch DType: float8 (FP8) reduces VRAM and RAM Usage",
@@ -837,6 +837,18 @@ if __name__ == "__main__":
                 with gr.Row():
                     cancel_button = gr.Button("Cancel")
                     open_outputs_button = gr.Button("Open Outputs Folder")
+
+            with gr.Column(scale=3):
+                video_output = gr.Video(label="Generated Video", height=720)
+                gr.Markdown("### Configuration Management")
+                with gr.Row():
+                    config_name_textbox = gr.Textbox(label="Config Name (for saving)", placeholder="Enter config name", value="")
+                    save_config_button = gr.Button("Save Config")
+                with gr.Row():
+                    config_dropdown = gr.Dropdown(label="Load Config", choices=get_config_list(), value=last_config)
+                    load_config_button = gr.Button("Load Config")
+                config_status = gr.Textbox(label="Config Status", value="", interactive=False, lines=1)
+                last_seed_output = gr.Textbox(label="Last Used Seed", interactive=False)
 
         enhance_button.click(fn=prompt_enc, inputs=[prompt_box, tar_lang], outputs=prompt_box)
         generate_button.click(
