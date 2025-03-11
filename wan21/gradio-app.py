@@ -806,7 +806,7 @@ if __name__ == "__main__":
                     with gr.Group(elem_classes="input-section"):
                         gr.Markdown("### Advanced Configuration")
                         vram_preset_radio = gr.Radio(
-                            choices=["4GB", "6GB", "8GB", "10GB", "12GB", "16GB", "24GB"],  # Capped at 24GB
+                            choices=["4GB", "6GB", "8GB", "10GB", "12GB", "16GB", "24GB"],  # Already capped at 24GB
                             label="GPU VRAM Preset",
                             value=config_loaded.get("vram_preset", "24GB")
                         )
@@ -840,15 +840,8 @@ if __name__ == "__main__":
 
             with gr.Column(scale=3):
                 video_output = gr.Video(label="Generated Video", height=720)
-                gr.Markdown("### Configuration Management")
-                with gr.Row():
-                    config_name_textbox = gr.Textbox(label="Config Name (for saving)", placeholder="Enter config name", value="")
-                    save_config_button = gr.Button("Save Config")
-                with gr.Row():
-                    config_dropdown = gr.Dropdown(label="Load Config", choices=get_config_list(), value=last_config)
-                    load_config_button = gr.Button("Load Config")
-                config_status = gr.Textbox(label="Config Status", value="", interactive=False, lines=1)
-                last_seed_output = gr.Textbox(label="Last Used Seed", interactive=False)
+                log_output = gr.Textbox(label="Generation Log", lines=10)
+                seed_output = gr.Textbox(label="Last Used Seed")
 
         enhance_button.click(fn=prompt_enc, inputs=[prompt_box, tar_lang], outputs=prompt_box)
         generate_button.click(
@@ -863,7 +856,7 @@ if __name__ == "__main__":
                 pr_rife_checkbox, pr_rife_radio, cfg_scale_slider, sigma_shift_slider,
                 lora_dropdown, lora_alpha_slider
             ],
-            outputs=[video_output, last_seed_output]
+            outputs=[video_output, log_output, seed_output]
         )
         cancel_button.click(fn=cancel_generation, outputs=[])
         open_outputs_button.click(fn=open_outputs_folder, outputs=[])
@@ -883,25 +876,5 @@ if __name__ == "__main__":
             outputs=num_persistent_text
         )
         refresh_lora_button.click(fn=refresh_lora_list, inputs=[], outputs=lora_dropdown)
-        save_config_button.click(
-            fn=save_config,
-            inputs=[config_name_textbox, model_choice_radio, vram_preset_radio, aspect_ratio_radio, width_slider, height_slider,
-                    auto_crop_checkbox, tiled_checkbox, inference_steps_slider, pr_rife_checkbox, pr_rife_radio, cfg_scale_slider, sigma_shift_slider,
-                    num_persistent_text, torch_dtype_radio, lora_dropdown, lora_alpha_slider, negative_prompt, save_prompt_checkbox, multiline_checkbox,
-                    num_generations, use_random_seed_checkbox, seed_input, quality_slider, fps_slider, num_frames_slider, tar_lang],
-            outputs=[config_status, config_dropdown]
-        )
-        load_config_button.click(
-            fn=load_config,
-            inputs=[config_dropdown],
-            outputs=[
-                config_status, 
-                model_choice_radio, vram_preset_radio, aspect_ratio_radio, width_slider, height_slider,
-                auto_crop_checkbox, tiled_checkbox, inference_steps_slider, pr_rife_checkbox, pr_rife_radio, cfg_scale_slider, sigma_shift_slider,
-                num_persistent_text, torch_dtype_radio, lora_dropdown, lora_alpha_slider, negative_prompt, save_prompt_checkbox, multiline_checkbox,
-                num_generations, use_random_seed_checkbox, seed_input, quality_slider, fps_slider, num_frames_slider, tar_lang,
-                config_name_textbox
-            ]
-        )
 
         demo.launch(share=args.share, inbrowser=True)
