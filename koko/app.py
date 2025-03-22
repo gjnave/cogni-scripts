@@ -3,6 +3,12 @@ import gradio as gr
 import os
 import random
 import torch
+from ebooklib import epub, ITEM_DOCUMENT
+from bs4 import BeautifulSoup
+import pymupdf as fitz
+import pymupdf4llm
+import json
+import time
 
 IS_DUPLICATE = not os.getenv('SPACE_ID', '').startswith('hexgrad/')
 CHAR_LIMIT = None if IS_DUPLICATE else 5000
@@ -16,29 +22,63 @@ pipelines['b'].g2p.lexicon.golds['kokoro'] = 'kˈQkəɹQ'
 def forward_gpu(ps, ref_s, speed):
     return models[True](ps, ref_s, speed)
 
+def extract_text_from_epub(epub_file):
+    book = epub.read_epub(epub_file.name)
+    full_text = ""
+    for item in book.get_items():
+        if item.get_type() == ITEM_DOCUMENT:
+            soup = BeautifulSoup(item.get_body_content(), "html.parser")
+            full_text += soup.get_text() + "\n"
+    return full_text
+
+class PdfParser:
+    def __init__(self, pdf_file):
+        self.pdf_file = pdf_file.name if hasattr(pdf_file, 'name') else pdf_file
+
+    def get_chapters(self):
+        doc = fitz.open(self.pdf_file)
+        toc = doc.get_toc()
+        chapters = []
+        if toc:
+            for level, title, page in toc:
+                if level == 1:
+                    end_page = doc.page_count if page == toc[-1][2] else toc[toc.index((level, title, page)) + 1][2] - 1
+                    text = "".join([doc[i].get_text() for i in range(page - 1, end_page)])
+                    chapters.append({'title': title, 'text': text})
+        else:
+            md_text = pymupdf4llm.to_markdown(self.pdf_file)
+            chapters.append({'title': 'Full Document', 'text': md_text})
+        return chapters if chapters else [{'title': 'Full Document', 'text': ''}]
+
+def normalize_text(text):
+    paragraphs = text.split('\n\n')
+    normalized_paragraphs = []
+    for paragraph in paragraphs:
+        cleaned_paragraph = ' '.join(paragraph.split('\n'))
+        cleaned_paragraph = ' '.join(cleaned_paragraph.split())
+        if cleaned_paragraph:
+            normalized_paragraphs.append(cleaned_paragraph)
+    return '\n\n'.join(normalized_paragraphs)
+
 def generate_first(text, voice='af_heart', speed=1, use_gpu=CUDA_AVAILABLE):
-    text = text if CHAR_LIMIT is None else text.strip()[:CHAR_LIMIT]
+    text = normalize_text(text) if CHAR_LIMIT is None else normalize_text(text.strip()[:CHAR_LIMIT])
     pipeline = pipelines[voice[0]]
     pack = pipeline.load_voice(voice)
     use_gpu = use_gpu and CUDA_AVAILABLE
     for _, ps, _ in pipeline(text, voice, speed):
-        ref_s = pack[len(ps)-1]
+        ref_s = pack[min(len(ps)-1, 509)]
         try:
-            if use_gpu:
-                audio = forward_gpu(ps, ref_s, speed)
-            else:
-                audio = models[False](ps, ref_s, speed)
+            audio = forward_gpu(ps, ref_s, speed) if use_gpu else models[False](ps, ref_s, speed)
         except gr.exceptions.Error as e:
             if use_gpu:
                 gr.Warning(str(e))
-                gr.Info('Retrying with CPU. To avoid this error, change Hardware to CPU.')
+                gr.Info('Retrying with CPU.')
                 audio = models[False](ps, ref_s, speed)
             else:
                 raise gr.Error(e)
         return (24000, audio.numpy()), ps
     return None, ''
 
-# Arena API
 def predict(text, voice='af_heart', speed=1):
     return generate_first(text, voice, speed, use_gpu=False)[0]
 
@@ -48,19 +88,18 @@ def tokenize_first(text, voice='af_heart'):
         return ps
     return ''
 
-def generate_all(text, voice='af_heart', speed=1, use_gpu=CUDA_AVAILABLE):
-    text = text if CHAR_LIMIT is None else text.strip()[:CHAR_LIMIT]
+def generate_all(text, voice='af_heart', speed=1, use_gpu=CUDA_AVAILABLE, streaming_active=True):
+    text = normalize_text(text) if CHAR_LIMIT is None else normalize_text(text.strip()[:CHAR_LIMIT])
     pipeline = pipelines[voice[0]]
     pack = pipeline.load_voice(voice)
     use_gpu = use_gpu and CUDA_AVAILABLE
     first = True
     for _, ps, _ in pipeline(text, voice, speed):
-        ref_s = pack[len(ps)-1]
+        if not streaming_active:
+            break
+        ref_s = pack[min(len(ps)-1, 509)]
         try:
-            if use_gpu:
-                audio = forward_gpu(ps, ref_s, speed)
-            else:
-                audio = models[False](ps, ref_s, speed)
+            audio = forward_gpu(ps, ref_s, speed) if use_gpu else models[False](ps, ref_s, speed)
         except gr.exceptions.Error as e:
             if use_gpu:
                 gr.Warning(str(e))
@@ -72,6 +111,41 @@ def generate_all(text, voice='af_heart', speed=1, use_gpu=CUDA_AVAILABLE):
         if first:
             first = False
             yield 24000, torch.zeros(1).numpy()
+
+def process_file_with_timestamps(file, voice='af_heart', speed=1, use_gpu=CUDA_AVAILABLE):
+    text = normalize_text(process_file(file.name))
+    text = text if CHAR_LIMIT is None else text[:CHAR_LIMIT]
+    pipeline = pipelines[voice[0]]
+    pack = pipeline.load_voice(voice)
+    use_gpu = use_gpu and CUDA_AVAILABLE
+    chunks = []
+    html = '<table><tr><th>Start</th><th>End</th><th>Text</th></tr>'
+    for gs, ps, tks in pipeline(text, voice, speed, model=models[use_gpu]):
+        ref_s = pack[min(len(ps)-1, 509)]
+        audio = forward_gpu(ps, ref_s, speed) if use_gpu else models[False](ps, ref_s, speed)
+        chunks.append(audio.numpy())
+        if tks and tks[0].start_ts is not None:
+            for t in tks:
+                if t.start_ts is None or t.end_ts is None:
+                    continue
+                html += f'<tr><td>{t.start_ts:.2f}</td><td>{t.end_ts:.2f}</td><td>{t.text}</td></tr>'
+    html += '</table>'
+    return chunks, html
+
+def stream_file(file, voice, speed, use_gpu):
+    chunks, html = process_file_with_timestamps(file, voice, speed, use_gpu)
+    return chunks, html
+
+def stream_audio_from_chunks(chunks, streaming_active):
+    for rate, audio in chunks:
+        if not streaming_active:
+            break
+        yield rate, audio
+
+def stream_file_from_chunk(chunk_state, chunk_data):
+    start_chunk = chunk_data['chunk'] if chunk_data and 'chunk' in chunk_data else 0
+    for rate, audio in chunk_state[start_chunk:]:
+        yield rate, audio
 
 with open('en.txt', 'r') as r:
     random_quotes = [line.strip() for line in r]
@@ -88,119 +162,238 @@ def get_frankenstein():
         return r.read().strip()
 
 CHOICES = {
-'🇺🇸 🚺 Heart ❤️': 'af_heart',
-'🇺🇸 🚺 Bella 🔥': 'af_bella',
-'🇺🇸 🚺 Nicole 🎧': 'af_nicole',
-'🇺🇸 🚺 Aoede': 'af_aoede',
-'🇺🇸 🚺 Kore': 'af_kore',
-'🇺🇸 🚺 Sarah': 'af_sarah',
-'🇺🇸 🚺 Nova': 'af_nova',
-'🇺🇸 🚺 Sky': 'af_sky',
-'🇺🇸 🚺 Alloy': 'af_alloy',
-'🇺🇸 🚺 Jessica': 'af_jessica',
-'🇺🇸 🚺 River': 'af_river',
-'🇺🇸 🚹 Michael': 'am_michael',
-'🇺🇸 🚹 Fenrir': 'am_fenrir',
-'🇺🇸 🚹 Puck': 'am_puck',
-'🇺🇸 🚹 Echo': 'am_echo',
-'🇺🇸 🚹 Eric': 'am_eric',
-'🇺🇸 🚹 Liam': 'am_liam',
-'🇺🇸 🚹 Onyx': 'am_onyx',
-'🇺🇸 🚹 Santa': 'am_santa',
-'🇺🇸 🚹 Adam': 'am_adam',
-'🇬🇧 🚺 Emma': 'bf_emma',
-'🇬🇧 🚺 Isabella': 'bf_isabella',
-'🇬🇧 🚺 Alice': 'bf_alice',
-'🇬🇧 🚺 Lily': 'bf_lily',
-'🇬🇧 🚹 George': 'bm_george',
-'🇬🇧 🚹 Fable': 'bm_fable',
-'🇬🇧 🚹 Lewis': 'bm_lewis',
-'🇬🇧 🚹 Daniel': 'bm_daniel',
+    '🇺🇸 🚺 Heart ❤️': 'af_heart',
+    '🇺🇸 🚺 Bella 🔥': 'af_bella',
+    '🇺🇸 🚺 Nicole 🎧': 'af_nicole',
+    '🇺🇸 🚺 Aoede': 'af_aoede',
+    '🇺🇸 🚺 Kore': 'af_kore',
+    '🇺🇸 🚺 Sarah': 'af_sarah',
+    '🇺🇸 🚺 Nova': 'af_nova',
+    '🇺🇸 🚺 Sky': 'af_sky',
+    '🇺🇸 🚺 Alloy': 'af_alloy',
+    '🇺🇸 🚺 Jessica': 'af_jessica',
+    '🇺🇸 🚺 River': 'af_river',
+    '🇺🇸 🚹 Michael': 'am_michael',
+    '🇺🇸 🚹 Fenrir': 'am_fenrir',
+    '🇺🇸 🚹 Puck': 'am_puck',
+    '🇺🇸 🚹 Echo': 'am_echo',
+    '🇺🇸 🚹 Eric': 'am_eric',
+    '🇺🇸 🚹 Liam': 'am_liam',
+    '🇺🇸 🚹 Onyx': 'am_onyx',
+    '🇺🇸 🚹 Santa': 'am_santa',
+    '🇺🇸 🚹 Adam': 'am_adam',
+    '🇬🇧 🚺 Emma': 'bf_emma',
+    '🇬🇧 🚺 Isabella': 'bf_isabella',
+    '🇬🇧 🚺 Alice': 'bf_alice',
+    '🇬🇧 🚺 Lily': 'bf_lily',
+    '🇬🇧 🚹 George': 'bm_george',
+    '🇬🇧 🚹 Fable': 'bm_fable',
+    '🇬🇧 🚹 Lewis': 'bm_lewis',
+    '🇬🇧 🚹 Daniel': 'bm_daniel',
 }
 for v in CHOICES.values():
     pipelines[v[0]].load_voice(v)
 
 TOKEN_NOTE = '''
 💡 Customize pronunciation with Markdown link syntax and /slashes/ like `[Kokoro](/kˈOkəɹO/)`
-
-💬 To adjust intonation, try punctuation `;:,.!?—…"()“”` or stress `ˈ` and `ˌ`
-
-⬇️ Lower stress `[1 level](-1)` or `[2 levels](-2)`
-
-⬆️ Raise stress 1 level `[or](+2)` 2 levels (only works on less stressed, usually short words)
 '''
+
+STREAM_NOTE = '\n\n'.join(['⚠️ Gradio bug might yield no audio on first Stream click'] + 
+                         ([f'✂️ Capped at {CHAR_LIMIT} characters'] if CHAR_LIMIT else []))
+
+if not os.path.exists("processed_documents"):
+    os.makedirs("processed_documents")
+
+def extract_chapters_from_epub(epub_file):
+    book = epub.read_epub(epub_file)
+    if book.toc:
+        chapters = []
+        for link in book.toc:
+            item = book.get_item_with_href(link.href)
+            if item and item.get_type() == ITEM_DOCUMENT:
+                soup = BeautifulSoup(item.get_body_content(), "html.parser")
+                text = soup.get_text(separator=' ')
+                chapters.append({"title": link.title or f"Chapter {len(chapters)+1}", "text": normalize_text(text)})
+        return chapters if chapters else [{"title": "Full Document", "text": normalize_text("".join([soup.get_text(separator=' ') for item in book.get_items_of_type(ITEM_DOCUMENT) if item.get_type() == ITEM_DOCUMENT]))}]
+    else:
+        chapters = []
+        for item in book.get_items_of_type(ITEM_DOCUMENT):
+            soup = BeautifulSoup(item.get_body_content(), "html.parser")
+            text = soup.get_text(separator=' ')
+            chapters.append({"title": f"Section {len(chapters)+1}", "text": normalize_text(text)})
+        return chapters if chapters else [{"title": "Full Document", "text": ""}]
+
+def process_file(file):
+    file_path = file.name if hasattr(file, 'name') else file
+    if file_path.endswith('.epub'):
+        return extract_chapters_from_epub(file_path)
+    elif file_path.endswith('.pdf'):
+        parser = PdfParser(file)
+        chapters = parser.get_chapters()
+        for chapter in chapters:
+            chapter['text'] = normalize_text(chapter['text'])
+        return chapters
+    else:
+        with open(file_path, encoding='utf-8') as f:
+            text = f.read()
+        normalized_text = normalize_text(text)
+        return [{'title': 'Full Document', 'text': normalized_text}]
+
+def generate_unique_name(original_name):
+    base_name = os.path.splitext(os.path.basename(original_name))[0]
+    timestamp = int(time.time())
+    return f"{base_name}_{timestamp}.json"
+
+def save_chapters(chapters, unique_name):
+    data = {"document_name": unique_name, "chapters": chapters}
+    with open(os.path.join("processed_documents", unique_name), "w") as f:
+        json.dump(data, f)
+
+def get_documents():
+    return [f for f in os.listdir("processed_documents") if f.endswith('.json')]
+
+def get_chapters(document):
+    if not document:
+        return gr.update(choices=[], value=None)
+    with open(os.path.join("processed_documents", document), "r") as f:
+        data = json.load(f)
+    chapters = [chapter["title"] for chapter in data["chapters"]]
+    return gr.update(choices=chapters, value=chapters[0] if chapters else None)
+
+def load_chapter_text(document, chapter_title):
+    if not document or not chapter_title:
+        return ""
+    with open(os.path.join("processed_documents", document), "r") as f:
+        data = json.load(f)
+    for chapter in data["chapters"]:
+        if chapter["title"] == chapter_title:
+            return chapter["text"]
+    return ""
+
+def process_and_save(file):
+    if file is None:
+        return gr.update(), gr.update(), "Please upload a file."
+    chapters = process_file(file)
+    unique_name = generate_unique_name(file.name)
+    save_chapters(chapters, unique_name)
+    documents = get_documents()
+    chapter_titles = [chapter["title"] for chapter in chapters]
+    return (
+        gr.update(choices=documents, value=unique_name),
+        gr.update(choices=chapter_titles, value=chapter_titles[0] if chapter_titles else None),
+        f"Document '{unique_name}' processed and saved."
+    )
 
 with gr.Blocks() as generate_tab:
     out_audio = gr.Audio(label='Output Audio', interactive=False, streaming=False, autoplay=True)
     generate_btn = gr.Button('Generate', variant='primary')
     with gr.Accordion('Output Tokens', open=True):
-        out_ps = gr.Textbox(interactive=False, show_label=False, info='Tokens used to generate the audio, up to 510 context length.')
+        out_ps = gr.Textbox(interactive=False, show_label=False)
         tokenize_btn = gr.Button('Tokenize', variant='secondary')
         gr.Markdown(TOKEN_NOTE)
-        predict_btn = gr.Button('Predict', variant='secondary', visible=False)
-
-STREAM_NOTE = ['⚠️ There is an unknown Gradio bug that might yield no audio the first time you click `Stream`.']
-if CHAR_LIMIT is not None:
-    STREAM_NOTE.append(f'✂️ Each stream is capped at {CHAR_LIMIT} characters.')
-    STREAM_NOTE.append('🚀 Want more characters? You can [use Kokoro directly](https://huggingface.co/hexgrad/Kokoro-82M#usage) or duplicate this space:')
-STREAM_NOTE = '\n\n'.join(STREAM_NOTE)
 
 with gr.Blocks() as stream_tab:
     out_stream = gr.Audio(label='Output Audio Stream', interactive=False, streaming=True, autoplay=True)
     with gr.Row():
         stream_btn = gr.Button('Stream', variant='primary')
         stop_btn = gr.Button('Stop', variant='stop')
-    with gr.Accordion('Note', open=True):
-        gr.Markdown(STREAM_NOTE)
-        gr.DuplicateButton()
+        stream_file_btn = gr.Button('Stream File', variant='primary')
+        process_btn = gr.Button('Process and Save Chapters', variant='secondary')
+    with gr.Row():
+        file_upload = gr.File(label="Upload EPUB/PDF/TXT")
+    gr.Markdown("Upload a file and click 'Process and Save Chapters' to extract and save chapters for later use.")
+    status = gr.Textbox(label="Status", interactive=False)
+    file_viewer = gr.HTML(label="File Viewer")
+    chunk_state = gr.State(value=[])
+    streaming_active = gr.State(value=False)
+    gr.HTML("""
+    <script>
+    function stopAudio() {
+        const audioElements = document.querySelectorAll('audio');
+        audioElements.forEach(audio => {
+            audio.pause();
+            audio.currentTime = 0;
+        });
+    }
+    window.addEventListener('message', (event) => {
+        if (event.data.chunk !== undefined) {
+            document.getElementById('chunk_input').value = JSON.stringify({chunk: event.data.chunk});
+            document.getElementById('chunk_trigger').click();
+        }
+    });
+    </script>
+    """)
+    chunk_input = gr.JSON(visible=False, elem_id="chunk_input")
+    chunk_trigger = gr.Button("Trigger Chunk", visible=False, elem_id="chunk_trigger")
 
 BANNER_TEXT = '''
-[***Kokoro*** **is an open-weight TTS model with 82 million parameters.**](https://huggingface.co/hexgrad/Kokoro-82M)
+# Kokoro-Plus [(getgoingfast.pro)](https://www.getgoingfast.pro)
 
-As of January 31st, 2025, Kokoro was the most-liked [**TTS model**](https://huggingface.co/models?pipeline_tag=text-to-speech&sort=likes) and the most-liked [**TTS space**](https://huggingface.co/spaces?sort=likes&search=tts) on Hugging Face.
+[***Kokoro*** **is an open-weight TTS model with 82 million parameters.**](https://huggingface.co/hexgrad/Kokoro-82M)  
 
-This demo only showcases English, but you can directly use the model to access other languages.
+[Listen to good music!](https://music.youtube.com/channel/UCY658vbL6S2zlRomNHoX54Q)
 '''
+
 API_OPEN = os.getenv('SPACE_ID') != 'hexgrad/Kokoro-TTS'
-API_NAME = None if API_OPEN else False
+
 with gr.Blocks() as app:
-    app.config = {"arbitrary_types_allowed": True}  # Add this line
-    with gr.Row():
-        gr.Markdown(BANNER_TEXT)
+    gr.Markdown(BANNER_TEXT)
     with gr.Row():
         with gr.Column():
-            text = gr.Textbox(label='Input Text', info=f"Up to ~500 characters per Generate, or {'∞' if CHAR_LIMIT is None else CHAR_LIMIT} characters per Stream")
+            gr.Markdown("### Load Pre-processed Document")
             with gr.Row():
-                voice = gr.Dropdown(list(CHOICES.items()), value='af_heart', label='Voice', info='Quality and availability vary by language')
-                use_gpu = gr.Dropdown(
-                    [('ZeroGPU 🚀', True), ('CPU 🐌', False)],
-                    value=CUDA_AVAILABLE,
-                    label='Hardware',
-                    info='GPU is usually faster, but has a usage quota',
-                    interactive=CUDA_AVAILABLE
-                )
+                document_dropdown = gr.Dropdown(label="Select Document", choices=get_documents())
+                chapter_dropdown = gr.Dropdown(label="Select Chapter", choices=[])
+            text = gr.Textbox(label='Input Text')
+            with gr.Row():
+                voice = gr.Dropdown(list(CHOICES.items()), value='af_heart', label='Voice')
+                use_gpu = gr.Dropdown([('ZeroGPU 🚀', True), ('CPU 🐌', False)], value=CUDA_AVAILABLE, label='Hardware')
             speed = gr.Slider(minimum=0.5, maximum=2, value=1, step=0.1, label='Speed')
             random_btn = gr.Button('🎲 Random Quote 💬', variant='secondary')
-            with gr.Row():
-                gatsby_btn = gr.Button('🥂 Gatsby 📕', variant='secondary')
-                frankenstein_btn = gr.Button('💀 Frankenstein 📗', variant='secondary')
+            gatsby_btn = gr.Button('🥂 Gatsby 📕', variant='secondary')
+            frankenstein_btn = gr.Button('💀 Frankenstein 📗', variant='secondary')
         with gr.Column():
             gr.TabbedInterface([generate_tab, stream_tab], ['Generate', 'Stream'])
-    random_btn.click(fn=get_random_quote, inputs=[], outputs=[text], api_name=API_NAME)
-    gatsby_btn.click(fn=get_gatsby, inputs=[], outputs=[text], api_name=API_NAME)
-    frankenstein_btn.click(fn=get_frankenstein, inputs=[], outputs=[text], api_name=API_NAME)
-    from typing import Tuple
-    import numpy as np
 
-    def wrapped_generate_first(text: str, voice: str, speed: float, use_gpu: bool) -> Tuple[Tuple[int, np.ndarray], str]:
-        return generate_first(text, voice, speed, use_gpu)
+    document_dropdown.change(fn=get_chapters, inputs=[document_dropdown], outputs=[chapter_dropdown])
+    chapter_dropdown.change(fn=load_chapter_text, inputs=[document_dropdown, chapter_dropdown], outputs=[text])
+    process_btn.click(fn=process_and_save, inputs=[file_upload], outputs=[document_dropdown, chapter_dropdown, status])
+    random_btn.click(fn=get_random_quote, inputs=[], outputs=[text])
+    gatsby_btn.click(fn=get_gatsby, inputs=[], outputs=[text])
+    frankenstein_btn.click(fn=get_frankenstein, inputs=[], outputs=[text])
+    generate_btn.click(fn=generate_first, inputs=[text, voice, speed, use_gpu], outputs=[out_audio, out_ps])
+    tokenize_btn.click(fn=tokenize_first, inputs=[text, voice], outputs=[out_ps])
 
-    # Then your button binding
-    generate_btn.click(fn=wrapped_generate_first, inputs=[text, voice, speed, use_gpu], outputs=[out_audio, out_ps], api_name=False)
-    tokenize_btn.click(fn=tokenize_first, inputs=[text, voice], outputs=[out_ps], api_name=API_NAME)
-    stream_event = stream_btn.click(fn=generate_all, inputs=[text, voice, speed, use_gpu], outputs=[out_stream], api_name=API_NAME)
-    stop_btn.click(fn=None, cancels=stream_event)
-    predict_btn.click(fn=predict, inputs=[text, voice, speed], outputs=[out_audio], api_name=API_NAME)
+    stream_event = stream_btn.click(
+        fn=lambda: (True, None),
+        outputs=[streaming_active, out_stream]
+    ).then(
+        fn=generate_all,
+        inputs=[text, voice, speed, use_gpu, streaming_active],
+        outputs=[out_stream]
+    )
+
+    file_stream_event = stream_file_btn.click(
+        fn=lambda: (True, None),
+        outputs=[streaming_active, out_stream]
+    ).then(
+        fn=stream_file,
+        inputs=[file_upload, voice, speed, use_gpu],
+        outputs=[chunk_state, file_viewer]
+    ).then(
+        fn=stream_audio_from_chunks,
+        inputs=[chunk_state, streaming_active],
+        outputs=[out_stream]
+    )
+
+    stop_btn.click(
+        fn=lambda: False,
+        outputs=[streaming_active],
+        js="stopAudio",
+        cancels=[stream_event, file_stream_event]
+    )
+
+    chunk_trigger.click(fn=stream_file_from_chunk, inputs=[chunk_state, chunk_input], outputs=[out_stream])
 
 if __name__ == '__main__':
-    app.queue(api_open=API_OPEN).launch(show_api=API_OPEN)
+    app.queue(api_open=API_OPEN).launch(share=API_OPEN)
