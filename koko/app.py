@@ -3,6 +3,7 @@ import gradio as gr
 import os
 import random
 import torch
+import ebooklib
 from ebooklib import epub, ITEM_DOCUMENT
 from bs4 import BeautifulSoup
 import pymupdf as fitz
@@ -10,9 +11,11 @@ import pymupdf4llm
 import json
 import time
 
+# Environment settings
 IS_DUPLICATE = not os.getenv('SPACE_ID', '').startswith('hexgrad/')
 CHAR_LIMIT = None if IS_DUPLICATE else 5000
 
+# Model initialization
 CUDA_AVAILABLE = torch.cuda.is_available()
 models = {gpu: KModel().to('cuda' if gpu else 'cpu').eval() for gpu in [False] + ([True] if CUDA_AVAILABLE else [])}
 pipelines = {lang_code: KPipeline(lang_code=lang_code, model=False) for lang_code in 'ab'}
@@ -22,16 +25,66 @@ pipelines['b'].g2p.lexicon.golds['kokoro'] = 'kˈQkəɹQ'
 def forward_gpu(ps, ref_s, speed):
     return models[True](ps, ref_s, speed)
 
-def extract_text_from_epub(epub_file):
-    book = epub.read_epub(epub_file.name)
+def normalize_text(text):
+    """Normalize text by stripping whitespace and handling special characters."""
+    return ' '.join(text.split()).strip()
+
+def extract_chapters_from_epub(epub_file):
+    book = epub.read_epub(epub_file)
+    chapters = []
+
+    def process_toc_entry(toc_entry, parent_title=None):
+        # Handle (Section, subitems) tuples
+        if isinstance(toc_entry, tuple) and len(toc_entry) == 2:
+            section, subitems = toc_entry
+            # Section can be a string or a Section object
+            title = section.title if hasattr(section, 'title') else section
+            display_title = f"{parent_title} - {title}" if parent_title else title
+            # Recursively process subitems
+            for subitem in subitems:
+                process_toc_entry(subitem, parent_title=display_title)
+        # Handle Link objects
+        elif hasattr(toc_entry, 'title') and hasattr(toc_entry, 'href'):
+            title = toc_entry.title or f"Chapter {len(chapters)+1}"
+            href = toc_entry.href
+            display_title = f"{parent_title} - {title}" if parent_title else title
+            # Extract content if href is valid
+            if href and isinstance(href, str):
+                file_href = href.split('#')[0]
+                item = book.get_item_with_href(file_href)
+                if item and item.get_type() == ebooklib.ITEM_DOCUMENT:
+                    soup = BeautifulSoup(item.get_body_content(), "html.parser")
+                    if '#' in href:
+                        fragment = href.split('#')[1]
+                        element = soup.find(id=fragment)
+                        text = element.get_text(separator=' ') if element else soup.get_text(separator=' ')
+                    else:
+                        text = soup.get_text(separator=' ')
+                    chapters.append({"title": display_title, "text": normalize_text(text)})
+            else:
+                print(f"Skipping entry with invalid href: {href}")
+        else:
+            print(f"Skipping unknown TOC entry: {toc_entry}")
+
+    # Process the TOC
+    print("TOC:", book.toc)  # Debug: see the TOC structure
+    if book.toc:
+        for toc_entry in book.toc:
+            process_toc_entry(toc_entry)
+        if chapters:
+            return chapters
+
+    # Fallback: extract all documents if TOC fails
+    print("No chapters extracted from TOC, falling back to full document")
     full_text = ""
-    for item in book.get_items():
-        if item.get_type() == ITEM_DOCUMENT:
-            soup = BeautifulSoup(item.get_body_content(), "html.parser")
-            full_text += soup.get_text() + "\n"
-    return full_text
+    for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
+        soup = BeautifulSoup(item.get_body_content(), "html.parser")
+        text = soup.get_text(separator=' ')
+        full_text += text + " "
+    return [{"title": "Full Document", "text": normalize_text(full_text)}]
 
 class PdfParser:
+    """Parser for extracting chapters from PDF files."""
     def __init__(self, pdf_file):
         self.pdf_file = pdf_file.name if hasattr(pdf_file, 'name') else pdf_file
 
@@ -49,16 +102,6 @@ class PdfParser:
             md_text = pymupdf4llm.to_markdown(self.pdf_file)
             chapters.append({'title': 'Full Document', 'text': md_text})
         return chapters if chapters else [{'title': 'Full Document', 'text': ''}]
-
-def normalize_text(text):
-    paragraphs = text.split('\n\n')
-    normalized_paragraphs = []
-    for paragraph in paragraphs:
-        cleaned_paragraph = ' '.join(paragraph.split('\n'))
-        cleaned_paragraph = ' '.join(cleaned_paragraph.split())
-        if cleaned_paragraph:
-            normalized_paragraphs.append(cleaned_paragraph)
-    return '\n\n'.join(normalized_paragraphs)
 
 def generate_first(text, voice='af_heart', speed=1, use_gpu=CUDA_AVAILABLE):
     text = normalize_text(text) if CHAR_LIMIT is None else normalize_text(text.strip()[:CHAR_LIMIT])
@@ -204,31 +247,13 @@ STREAM_NOTE = '\n\n'.join(['⚠️ Gradio bug might yield no audio on first Stre
 if not os.path.exists("processed_documents"):
     os.makedirs("processed_documents")
 
-def extract_chapters_from_epub(epub_file):
-    book = epub.read_epub(epub_file)
-    if book.toc:
-        chapters = []
-        for link in book.toc:
-            item = book.get_item_with_href(link.href)
-            if item and item.get_type() == ITEM_DOCUMENT:
-                soup = BeautifulSoup(item.get_body_content(), "html.parser")
-                text = soup.get_text(separator=' ')
-                chapters.append({"title": link.title or f"Chapter {len(chapters)+1}", "text": normalize_text(text)})
-        return chapters if chapters else [{"title": "Full Document", "text": normalize_text("".join([soup.get_text(separator=' ') for item in book.get_items_of_type(ITEM_DOCUMENT) if item.get_type() == ITEM_DOCUMENT]))}]
-    else:
-        chapters = []
-        for item in book.get_items_of_type(ITEM_DOCUMENT):
-            soup = BeautifulSoup(item.get_body_content(), "html.parser")
-            text = soup.get_text(separator=' ')
-            chapters.append({"title": f"Section {len(chapters)+1}", "text": normalize_text(text)})
-        return chapters if chapters else [{"title": "Full Document", "text": ""}]
-
 def process_file(file):
+    """Process uploaded files (EPUB, PDF, TXT) and return chapters or full text."""
     file_path = file.name if hasattr(file, 'name') else file
     if file_path.endswith('.epub'):
         return extract_chapters_from_epub(file_path)
     elif file_path.endswith('.pdf'):
-        parser = PdfParser(file)
+        parser = PdfParser(file_path)
         chapters = parser.get_chapters()
         for chapter in chapters:
             chapter['text'] = normalize_text(chapter['text'])
@@ -297,7 +322,6 @@ with gr.Blocks() as stream_tab:
     with gr.Row():
         stream_btn = gr.Button('Stream', variant='primary')
         stop_btn = gr.Button('Stop', variant='stop')
-        stream_file_btn = gr.Button('Stream File', variant='primary')
         process_btn = gr.Button('Process and Save Chapters', variant='secondary')
     with gr.Row():
         file_upload = gr.File(label="Upload EPUB/PDF/TXT")
@@ -373,24 +397,12 @@ with gr.Blocks() as app:
         outputs=[out_stream]
     )
 
-    file_stream_event = stream_file_btn.click(
-        fn=lambda: (True, None),
-        outputs=[streaming_active, out_stream]
-    ).then(
-        fn=stream_file,
-        inputs=[file_upload, voice, speed, use_gpu],
-        outputs=[chunk_state, file_viewer]
-    ).then(
-        fn=stream_audio_from_chunks,
-        inputs=[chunk_state, streaming_active],
-        outputs=[out_stream]
-    )
 
     stop_btn.click(
         fn=lambda: False,
         outputs=[streaming_active],
         js="stopAudio",
-        cancels=[stream_event, file_stream_event]
+        cancels=[stream_event]
     )
 
     chunk_trigger.click(fn=stream_file_from_chunk, inputs=[chunk_state, chunk_input], outputs=[out_stream])
