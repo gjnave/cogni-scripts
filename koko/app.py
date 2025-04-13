@@ -131,29 +131,56 @@ def tokenize_first(text, voice='af_heart'):
         return ps
     return ''
 
-def generate_all(text, voice='af_heart', speed=1, use_gpu=CUDA_AVAILABLE, streaming_active=True):
-    text = normalize_text(text) if CHAR_LIMIT is None else normalize_text(text.strip()[:CHAR_LIMIT])
+def generate_all(text, voice='af_heart', speed=1, use_gpu=CUDA_AVAILABLE, stream_all=False, document=None, chapter_title=None):
     pipeline = pipelines[voice[0]]
     pack = pipeline.load_voice(voice)
     use_gpu = use_gpu and CUDA_AVAILABLE
-    first = True
-    for _, ps, _ in pipeline(text, voice, speed):
-        if not streaming_active:
-            break
-        ref_s = pack[min(len(ps)-1, 509)]
-        try:
-            audio = forward_gpu(ps, ref_s, speed) if use_gpu else models[False](ps, ref_s, speed)
-        except gr.exceptions.Error as e:
-            if use_gpu:
-                gr.Warning(str(e))
-                gr.Info('Switching to CPU')
-                audio = models[False](ps, ref_s, speed)
-            else:
-                raise gr.Error(e)
-        yield 24000, audio.numpy()
-        if first:
-            first = False
-            yield 24000, torch.zeros(1).numpy()
+
+    # If stream_all is False, just stream the current chapter
+    if not stream_all or not document or not chapter_title:
+        text = normalize_text(text) if CHAR_LIMIT is None else normalize_text(text.strip()[:CHAR_LIMIT])
+        first = True
+        for _, ps, _ in pipeline(text, voice, speed):
+            ref_s = pack[min(len(ps)-1, 509)]
+            try:
+                audio = forward_gpu(ps, ref_s, speed) if use_gpu else models[False](ps, ref_s, speed)
+            except gr.exceptions.Error as e:
+                if use_gpu:
+                    gr.Warning(str(e))
+                    gr.Info('Switching to CPU')
+                    audio = models[False](ps, ref_s, speed)
+                else:
+                    raise gr.Error(e)
+            yield 24000, audio.numpy()
+            if first:
+                first = False
+                yield 24000, torch.zeros(1).numpy()
+        return
+
+    # If stream_all is True, stream the selected chapter and all subsequent chapters
+    with open(os.path.join("processed_documents", document), "r") as f:
+        data = json.load(f)
+    chapters = data["chapters"]
+    start_index = next(i for i, chapter in enumerate(chapters) if chapter["title"] == chapter_title)
+    
+    for chapter in chapters[start_index:]:
+        text = normalize_text(chapter["text"]) if CHAR_LIMIT is None else normalize_text(chapter["text"].strip()[:CHAR_LIMIT])
+        first = True
+        for _, ps, _ in pipeline(text, voice, speed):
+            ref_s = pack[min(len(ps)-1, 509)]
+            try:
+                audio = forward_gpu(ps, ref_s, speed) if use_gpu else models[False](ps, ref_s, speed)
+            except gr.exceptions.Error as e:
+                if use_gpu:
+                    gr.Warning(str(e))
+                    gr.Info('Switching to CPU')
+                    audio = models[False](ps, ref_s, speed)
+                else:
+                    raise gr.Error(e)
+            yield 24000, audio.numpy()
+            if first:
+                first = False
+                yield 24000, torch.zeros(1).numpy()
 
 def process_file_with_timestamps(file, voice='af_heart', speed=1, use_gpu=CUDA_AVAILABLE):
     text = normalize_text(process_file(file.name))
@@ -308,6 +335,68 @@ def process_and_save(file):
         gr.update(choices=chapter_titles, value=chapter_titles[0] if chapter_titles else None),
         f"Document '{unique_name}' processed and saved."
     )
+    
+    
+def generate_all(text, voice='af_heart', speed=1, use_gpu=CUDA_AVAILABLE, streaming_active=True, stream_all=False, document=None, chapter_title=None):
+    pipeline = pipelines[voice[0]]
+    pack = pipeline.load_voice(voice)
+    use_gpu = use_gpu and CUDA_AVAILABLE
+
+    # If stream_all is False, just stream the current chapter (original behavior)
+    if not stream_all or not document or not chapter_title:
+        text = normalize_text(text) if CHAR_LIMIT is None else normalize_text(text.strip()[:CHAR_LIMIT])
+        first = True
+        for _, ps, _ in pipeline(text, voice, speed):
+            if not streaming_active:
+                break
+            ref_s = pack[min(len(ps)-1, 509)]
+            try:
+                audio = forward_gpu(ps, ref_s, speed) if use_gpu else models[False](ps, ref_s, speed)
+            except gr.exceptions.Error as e:
+                if use_gpu:
+                    gr.Warning(str(e))
+                    gr.Info('Switching to CPU')
+                    audio = models[False](ps, ref_s, speed)
+                else:
+                    raise gr.Error(e)
+            yield 24000, audio.numpy()
+            if first:
+                first = False
+                yield 24000, torch.zeros(1).numpy()
+        return
+
+    # If stream_all is True, stream the selected chapter and all subsequent chapters
+    with open(os.path.join("processed_documents", document), "r") as f:
+        data = json.load(f)
+    chapters = data["chapters"]
+    # Find the index of the selected chapter
+    start_index = next(i for i, chapter in enumerate(chapters) if chapter["title"] == chapter_title)
+    
+    # Stream each chapter from the selected one onward
+    for chapter in chapters[start_index:]:
+        if not streaming_active:
+            break
+        text = normalize_text(chapter["text"]) if CHAR_LIMIT is None else normalize_text(chapter["text"].strip()[:CHAR_LIMIT])
+        first = True
+        for _, ps, _ in pipeline(text, voice, speed):
+            if not streaming_active:
+                break
+            ref_s = pack[min(len(ps)-1, 509)]
+            try:
+                audio = forward_gpu(ps, ref_s, speed) if use_gpu else models[False](ps, ref_s, speed)
+            except gr.exceptions.Error as e:
+                if use_gpu:
+                    gr.Warning(str(e))
+                    gr.Info('Switching to CPU')
+                    audio = models[False](ps, ref_s, speed)
+                else:
+                    raise gr.Error(e)
+            yield 24000, audio.numpy()
+            if first:
+                first = False
+                yield 24000, torch.zeros(1).numpy()
+                
+                
 
 with gr.Blocks() as generate_tab:
     out_audio = gr.Audio(label='Output Audio', interactive=False, streaming=False, autoplay=True)
@@ -322,6 +411,7 @@ with gr.Blocks() as stream_tab:
     with gr.Row():
         stream_btn = gr.Button('Stream', variant='primary')
         stop_btn = gr.Button('Stop', variant='stop')
+        stream_file_btn = gr.Button('Stream File', variant='primary')  # Ensure this is defined here
         process_btn = gr.Button('Process and Save Chapters', variant='secondary')
     with gr.Row():
         file_upload = gr.File(label="Upload EPUB/PDF/TXT")
@@ -360,25 +450,37 @@ BANNER_TEXT = '''
 
 API_OPEN = os.getenv('SPACE_ID') != 'hexgrad/Kokoro-TTS'
 
+
+
 with gr.Blocks() as app:
     gr.Markdown(BANNER_TEXT)
     with gr.Row():
         with gr.Column():
             gr.Markdown("### Load Pre-processed Document")
             with gr.Row():
-                document_dropdown = gr.Dropdown(label="Select Document", choices=get_documents(), value="")
-                chapter_dropdown = gr.Dropdown(label="Select Chapter", choices=[])
+                document_dropdown = gr.Dropdown(
+                    label="Select Document",
+                    choices=[""] + get_documents(),  # Blank default option
+                    value=""  # Pre-select the blank option
+                )
+                chapter_dropdown = gr.Dropdown(
+                    label="Select Chapter",
+                    choices=[],
+                    value=None
+                )
             text = gr.Textbox(label='Input Text')
             with gr.Row():
                 voice = gr.Dropdown(list(CHOICES.items()), value='af_heart', label='Voice')
                 use_gpu = gr.Dropdown([('ZeroGPU 🚀', True), ('CPU 🐌', False)], value=CUDA_AVAILABLE, label='Hardware')
             speed = gr.Slider(minimum=0.5, maximum=2, value=1, step=0.1, label='Speed')
+            stream_all_checkbox = gr.Checkbox(label="Stream All Chapters", value=False)
             random_btn = gr.Button('🎲 Random Quote 💬', variant='secondary')
             gatsby_btn = gr.Button('🥂 Gatsby 📕', variant='secondary')
             frankenstein_btn = gr.Button('💀 Frankenstein 📗', variant='secondary')
         with gr.Column():
             gr.TabbedInterface([generate_tab, stream_tab], ['Generate', 'Stream'])
 
+    # Event handlers
     document_dropdown.change(fn=get_chapters, inputs=[document_dropdown], outputs=[chapter_dropdown])
     chapter_dropdown.change(fn=load_chapter_text, inputs=[document_dropdown, chapter_dropdown], outputs=[text])
     process_btn.click(fn=process_and_save, inputs=[file_upload], outputs=[document_dropdown, chapter_dropdown, status])
@@ -393,10 +495,22 @@ with gr.Blocks() as app:
         outputs=[streaming_active, out_stream]
     ).then(
         fn=generate_all,
-        inputs=[text, voice, speed, use_gpu, streaming_active],
+        inputs=[text, voice, speed, use_gpu, streaming_active, stream_all_checkbox, document_dropdown, chapter_dropdown],
         outputs=[out_stream]
     )
 
+    file_stream_event = stream_file_btn.click(
+        fn=lambda: (True, None),
+        outputs=[streaming_active, out_stream]
+    ).then(
+        fn=stream_file,
+        inputs=[file_upload, voice, speed, use_gpu],
+        outputs=[chunk_state, file_viewer]
+    ).then(
+        fn=stream_audio_from_chunks,
+        inputs=[chunk_state, streaming_active],
+        outputs=[out_stream]
+    )
 
     stop_btn.click(
         fn=lambda: False,
