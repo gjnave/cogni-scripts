@@ -366,7 +366,7 @@ with gr.Blocks() as app:
         with gr.Column():
             gr.Markdown("### Load Pre-processed Document")
             with gr.Row():
-                document_dropdown = gr.Dropdown(label="Select Document", choices=get_documents())
+                document_dropdown = gr.Dropdown(label="Select Document", choices=get_documents(), value="")
                 chapter_dropdown = gr.Dropdown(label="Select Chapter", choices=[])
             text = gr.Textbox(label='Input Text')
             with gr.Row():
