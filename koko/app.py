@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from kokoro import KModel, KPipeline
 import gradio as gr
 import os
@@ -74,33 +75,98 @@ def extract_chapters_from_epub(epub_file):
         if chapters:
             return chapters
 
-    # Fallback: extract all documents if TOC fails
-    print("No chapters extracted from TOC, falling back to full document")
+    # Fallback 1: Try using the spine if TOC fails
+    if not chapters and book.spine:
+        print("No chapters extracted from TOC, falling back to spine")
+        for href_tuple in book.spine:
+            href = href_tuple[0]
+            item = book.get_item_with_href(href)
+            if item and item.get_type() == ebooklib.ITEM_DOCUMENT:
+                soup = BeautifulSoup(item.get_body_content(), "html.parser")
+                title_tag = soup.find('title')
+                title = title_tag.get_text(strip=True) if title_tag and title_tag.get_text(strip=True) else item.get_name()
+                text = soup.get_text(separator=' ')
+                if text.strip(): # Only add chapters with content
+                    chapters.append({"title": title, "text": normalize_text(text)})
+        if chapters:
+            return chapters
+
+    # Fallback 2: extract all documents if TOC and spine fail
+    print("No chapters extracted from TOC or spine, falling back to full document")
     full_text = ""
     for item in book.get_items_of_type(ebooklib.ITEM_DOCUMENT):
         soup = BeautifulSoup(item.get_body_content(), "html.parser")
         text = soup.get_text(separator=' ')
         full_text += text + " "
-    return [{"title": "Full Document", "text": normalize_text(full_text)}]
+    
+    if full_text.strip():
+        return [{"title": "Full Document", "text": normalize_text(full_text)}]
+    else:
+        return []
 
 class PdfParser:
     """Parser for extracting chapters from PDF files."""
     def __init__(self, pdf_file):
         self.pdf_file = pdf_file.name if hasattr(pdf_file, 'name') else pdf_file
+        self.doc = fitz.open(self.pdf_file)
+
+    def _is_header_or_footer(self, block_bbox, page_bbox, margin_y=50):
+        """Check if a text block is likely a header or footer based on vertical position."""
+        _x0, y0, _x1, y1 = block_bbox
+        page_height = page_bbox[3]
+        # Check if the block is in the top or bottom margin
+        if y1 < margin_y or y0 > page_height - margin_y:
+            return True
+        return False
+
+    def _get_text_for_page_range(self, start_page, end_page):
+        """Extracts clean text from a range of pages, removing headers/footers."""
+        full_text = []
+        for page_num in range(start_page, end_page):
+            if page_num >= self.doc.page_count:
+                break
+            page = self.doc[page_num]
+            page_bbox = page.rect
+            blocks = page.get_text("blocks")
+            for block in blocks:
+                # block format: (x0, y0, x1, y1, "text", block_no, block_type)
+                if not self._is_header_or_footer(block[:4], page_bbox):
+                    full_text.append(block[4])
+        return " ".join(full_text)
 
     def get_chapters(self):
-        doc = fitz.open(self.pdf_file)
-        toc = doc.get_toc()
+        toc = self.doc.get_toc()
         chapters = []
         if toc:
-            for level, title, page in toc:
-                if level == 1:
-                    end_page = doc.page_count if page == toc[-1][2] else toc[toc.index((level, title, page)) + 1][2] - 1
-                    text = "".join([doc[i].get_text() for i in range(page - 1, end_page)])
-                    chapters.append({'title': title, 'text': text})
-        else:
+            for i, (level, title, page) in enumerate(toc):
+                # Determine the end page for the current chapter entry
+                end_page = self.doc.page_count + 1 # Default to end of doc
+                # Look for the next entry at the same or a higher level
+                for next_level, _, next_page in toc[i+1:]:
+                    if next_level <= level:
+                        end_page = next_page
+                        break
+                
+                # Get text for the page range. fitz pages are 0-indexed, toc is 1-indexed
+                text = self._get_text_for_page_range(page - 1, end_page - 1)
+                
+                # Indent title to represent hierarchy
+                display_title = "  " * (level - 1) + title
+                chapters.append({'title': display_title, 'text': text})
+            
+            if chapters:
+                return chapters
+
+        # Fallback if TOC is missing or processing fails
+        print("PDF TOC missing or failed, falling back to markdown conversion.")
+        try:
             md_text = pymupdf4llm.to_markdown(self.pdf_file)
-            chapters.append({'title': 'Full Document', 'text': md_text})
+            chapters = [{'title': 'Full Document', 'text': md_text}]
+        except Exception as e:
+            print(f"Markdown conversion failed: {e}, falling back to raw text extraction.")
+            full_text = self._get_text_for_page_range(0, self.doc.page_count)
+            chapters = [{'title': 'Full Document', 'text': full_text}]
+        
         return chapters if chapters else [{'title': 'Full Document', 'text': ''}]
 
 def generate_first(text, voice='af_heart', speed=1, use_gpu=CUDA_AVAILABLE):
@@ -268,28 +334,34 @@ TOKEN_NOTE = '''
 💡 Customize pronunciation with Markdown link syntax and /slashes/ like `[Kokoro](/kˈOkəɹO/)`
 '''
 
-STREAM_NOTE = '\n\n'.join(['⚠️ Gradio bug might yield no audio on first Stream click'] + 
+STREAM_NOTE = '\n\n'.join(['⚠️ Gradio bug might yield no audio on first Stream click'] +
                          ([f'✂️ Capped at {CHAR_LIMIT} characters'] if CHAR_LIMIT else []))
 
 if not os.path.exists("processed_documents"):
     os.makedirs("processed_documents")
 
 def process_file(file):
-    """Process uploaded files (EPUB, PDF, TXT) and return chapters or full text."""
-    file_path = file.name if hasattr(file, 'name') else file
-    if file_path.endswith('.epub'):
-        return extract_chapters_from_epub(file_path)
-    elif file_path.endswith('.pdf'):
-        parser = PdfParser(file_path)
-        chapters = parser.get_chapters()
-        for chapter in chapters:
-            chapter['text'] = normalize_text(chapter['text'])
+    """Process uploaded files (EPUB, PDF, TXT) and return chapters or an error dict."""
+    try:
+        file_path = file.name if hasattr(file, 'name') else file
+        if file_path.endswith('.epub'):
+            chapters = extract_chapters_from_epub(file_path)
+        elif file_path.endswith('.pdf'):
+            parser = PdfParser(file_path)
+            chapters = parser.get_chapters()
+            # Normalize text for all chapters post-extraction
+            for chapter in chapters:
+                chapter['text'] = normalize_text(chapter['text'])
+        else:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                text = f.read()
+            normalized_text = normalize_text(text)
+            chapters = [{'title': 'Full Document', 'text': normalized_text}]
         return chapters
-    else:
-        with open(file_path, encoding='utf-8') as f:
-            text = f.read()
-        normalized_text = normalize_text(text)
-        return [{'title': 'Full Document', 'text': normalized_text}]
+    except Exception as e:
+        print(f"Error processing file {getattr(file, 'name', 'file')}: {e}")
+        # Return an error structure that can be handled by the caller
+        return {"error": f"Failed to process file. It may be corrupt or in an unsupported format. Details: {e}"}
 
 def generate_unique_name(original_name):
     base_name = os.path.splitext(os.path.basename(original_name))[0]
@@ -325,7 +397,18 @@ def load_chapter_text(document, chapter_title):
 def process_and_save(file):
     if file is None:
         return gr.update(), gr.update(), "Please upload a file."
-    chapters = process_file(file)
+    
+    result = process_file(file)
+    
+    # Check if processing returned an error
+    if isinstance(result, dict) and 'error' in result:
+        error_message = result['error']
+        return gr.update(), gr.update(), f"Error: {error_message}"
+
+    chapters = result
+    if not chapters:
+        return gr.update(), gr.update(), "Could not extract any chapters from the document."
+
     unique_name = generate_unique_name(file.name)
     save_chapters(chapters, unique_name)
     documents = get_documents()
@@ -333,7 +416,7 @@ def process_and_save(file):
     return (
         gr.update(choices=documents, value=unique_name),
         gr.update(choices=chapter_titles, value=chapter_titles[0] if chapter_titles else None),
-        f"Document '{unique_name}' processed and saved."
+        f"Document '{os.path.basename(unique_name)}' processed and saved."
     )
     
     
@@ -370,8 +453,12 @@ def generate_all(text, voice='af_heart', speed=1, use_gpu=CUDA_AVAILABLE, stream
         data = json.load(f)
     chapters = data["chapters"]
     # Find the index of the selected chapter
-    start_index = next(i for i, chapter in enumerate(chapters) if chapter["title"] == chapter_title)
-    
+    try:
+        start_index = next(i for i, chapter in enumerate(chapters) if chapter["title"] == chapter_title)
+    except StopIteration:
+        print(f"Chapter '{chapter_title}' not found in document '{document}'.")
+        return
+
     # Stream each chapter from the selected one onward
     for chapter in chapters[start_index:]:
         if not streaming_active:
@@ -523,3 +610,75 @@ with gr.Blocks() as app:
 
 if __name__ == '__main__':
     app.queue(api_open=API_OPEN).launch(share=API_OPEN)
+=======
+@echo off
+:: Check if the script is run as Administrator
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo This script requires administrator privileges.
+    echo Please run this script as an administrator.
+    pause
+    exit /b
+)
+
+cd /d %~dp0
+IF EXIST "disclaimer.md" (
+    TYPE "disclaimer.md"
+    pause
+)
+
+IF EXIST "type about.nfo" TYPE type about.nfo
+
+echo.
+:: Check if conda is installed
+where conda >nul 2>&1
+if %errorlevel% neq 0 (
+    echo Conda is not installed or not found in PATH.
+    echo Please install Anaconda/Miniconda and ensure it's added to PATH.
+    pause
+    exit /b
+)
+
+:: Check if conda environment 'kokoro' exists
+call conda env list | findstr /C:"kokoro " >nul
+if %errorlevel% equ 0 (
+    echo Conda environment 'kokoro' already exists.
+    set /p replace_env="Do you want to replace it? (y/n): "
+    if /i "!replace_env!"=="y" (
+        echo Removing existing 'kokoro' environment...
+        call conda deactivate
+        call conda env remove --name kokoro
+        echo Creating new 'kokoro' environment...
+        call conda create --name kokoro python=3.12 -y
+    ) else (
+        echo Using existing 'kokoro' environment...
+    )
+) else (
+    echo Creating new 'kokoro' environment...
+    call conda create --name kokoro python=3.12 -y
+)
+call conda activate kokoro
+git clone https://github.com/gjnave/kokoro-tts-plus
+cd kokoro-tts-plus
+git config --system --add safe.directory "kokoro-tts-plus"
+cd kokoro-tts-plus
+curl -LO https://raw.githubusercontent.com/gjnave/cogni-scripts/refs/heads/main/koko/app.py
+curl -LO https://raw.githubusercontent.com/gjnave/cogni-scripts/refs/heads/main/koko/en.txt
+curl -LO https://github.com/nazdridoy/kokoro-tts/releases/download/v1.0.0/voices-v1.0.bin
+curl -LO https://github.com/nazdridoy/kokoro-tts/releases/download/v1.0.0/kokoro-v1.0.onnx
+REM call conda install nvidia/label/cuda-12.6.3::cuda-toolkit -y
+pip install -r requirements.txt
+pip install torch torchaudio --index-url https://download.pytorch.org/whl/cu128
+pip install https://github.com/woct0rdho/triton-windows/releases/download/v3.2.0-windows.post10/triton-3.2.0-cp312-cp312-win_amd64.whl
+pip install sageattention
+pip install "https://github.com/kingbri1/flash-attention/releases/download/v2.7.4.post1/flash_attn-2.7.4.post1+cu128torch2.7.0cxx11abiFALSE-cp312-cp312-win_amd64.whl"
+
+pip install kokoro
+pip install ebooklib
+pip install PyMuPDF
+pip install pymupdf4llm
+pip install beautifulsoup4
+pip install gradio
+echo Installation Complete...
+pause
+>>>>>>> 8caec683981b015786334bf6e46e0aa1c8110920
