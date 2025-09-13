@@ -2,7 +2,7 @@
   "id": "242a6140-7341-49ca-876b-c01366b39b84",
   "revision": 0,
   "last_node_id": 39,
-  "last_link_id": 68,
+  "last_link_id": 69,
   "nodes": [
     {
       "id": 8,
@@ -36,7 +36,7 @@
           "type": "IMAGE",
           "slot_index": 0,
           "links": [
-            64
+            69
           ]
         }
       ],
@@ -44,48 +44,6 @@
         "cnr_id": "comfy-core",
         "ver": "0.3.57",
         "Node name for S&R": "VAEDecode",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "version": "7.1",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": []
-    },
-    {
-      "id": 34,
-      "type": "easy cleanGpuUsed",
-      "pos": [
-        1217.314453125,
-        367.8652648925781
-      ],
-      "size": [
-        157.38925170898438,
-        26
-      ],
-      "flags": {},
-      "order": 12,
-      "mode": 0,
-      "inputs": [
-        {
-          "name": "anything",
-          "type": "*",
-          "link": 64
-        }
-      ],
-      "outputs": [
-        {
-          "name": "output",
-          "type": "*",
-          "links": [
-            65
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfyui-easy-use",
-        "ver": "1.3.3",
-        "Node name for S&R": "easy cleanGpuUsed",
         "ue_properties": {
           "widget_ue_connectable": {},
           "version": "7.1",
@@ -144,13 +102,13 @@
         930.5321044921875
       ],
       "flags": {},
-      "order": 13,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
           "name": "images",
           "type": "IMAGE",
-          "link": 65
+          "link": 69
         }
       ],
       "outputs": [],
@@ -647,22 +605,6 @@
       "CLIP"
     ],
     [
-      64,
-      8,
-      0,
-      34,
-      0,
-      "*"
-    ],
-    [
-      65,
-      34,
-      0,
-      9,
-      0,
-      "IMAGE"
-    ],
-    [
       67,
       39,
       0,
@@ -677,6 +619,14 @@
       39,
       0,
       "*"
+    ],
+    [
+      69,
+      8,
+      0,
+      9,
+      0,
+      "IMAGE"
     ]
   ],
   "groups": [],
@@ -685,11 +635,11 @@
     "ds": {
       "scale": 1.1671841070450018,
       "offset": [
-        519.2287208232163,
-        33.373844046341844
+        -478.61443083420056,
+        -222.51265637070432
       ]
     },
-    "frontendVersion": "1.25.11",
+    "frontendVersion": "1.26.11",
     "ue_links": [],
     "links_added_by_ue": [],
     "VHS_latentpreview": false,
