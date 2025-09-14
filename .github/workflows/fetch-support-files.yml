@@ -1,0 +1,56 @@
+name: Fetch HuggingFace Support Files
+
+on:
+  workflow_dispatch:    # lets you run it manually from Actions tab
+  schedule:
+    - cron: "0 6 * * 1"   # optional: run every Monday at 06:00 UTC
+
+jobs:
+  fetch-and-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download wheels
+        run: |
+          mkdir -p support/wheels/py310
+          mkdir -p support/wheels/py311
+          mkdir -p support/wheels/py312
+          mkdir -p support/wheels/py313
+
+          # Python 3.10
+          curl -L -o support/wheels/py310/flash_attn-2.8.2-cp310-cp310-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/flash_attn-2.8.2-cp310-cp310-win_amd64.whl
+          curl -L -o support/wheels/py310/sageattention-2.2.0+cu128torch2.8.0.post2-cp39-abi3-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/sageattention-2.2.0+cu128torch2.8.0.post2-cp39-abi3-win_amd64.whl
+          curl -L -o support/wheels/py310/insightface-0.7.3-cp310-cp310-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/insightface-0.7.3-cp310-cp310-win_amd64.whl
+          curl -L -o support/wheels/py310/deepspeed-0.16.5-cp310-cp310-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/deepspeed-0.16.5-cp310-cp310-win_amd64.whl
+          curl -L -o support/wheels/py310/xformers-0.0.33-cp39-abi3-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/xformers-0.0.33+c159edc0.d20250906-cp39-abi3-win_amd64.whl
+
+          # Python 3.11
+          curl -L -o support/wheels/py311/flash_attn-2.8.2-cp311-cp311-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/flash_attn-2.8.2-cp311-cp311-win_amd64.whl
+          curl -L -o support/wheels/py311/sageattention-2.2.0+cu128torch2.8.0.post2-cp39-abi3-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/sageattention-2.2.0+cu128torch2.8.0.post2-cp39-abi3-win_amd64.whl
+          curl -L -o support/wheels/py311/insightface-0.7.3-cp311-cp311-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/insightface-0.7.3-cp311-cp311-win_amd64.whl
+          curl -L -o support/wheels/py311/deepspeed-0.16.5-cp311-cp311-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/deepspeed-0.16.5-cp311-cp311-win_amd64.whl
+          curl -L -o support/wheels/py311/xformers-0.0.33-cp39-abi3-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/xformers-0.0.33+c159edc0.d20250906-cp39-abi3-win_amd64.whl
+
+          # Python 3.12
+          curl -L -o support/wheels/py312/flash_attn-2.8.2-cp312-cp312-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/flash_attn-2.8.2-cp312-cp312-win_amd64.whl
+          curl -L -o support/wheels/py312/sageattention-2.2.0+cu128torch2.8.0.post2-cp39-abi3-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/sageattention-2.2.0+cu128torch2.8.0.post2-cp39-abi3-win_amd64.whl
+          curl -L -o support/wheels/py312/insightface-0.7.3-cp312-cp312-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/insightface-0.7.3-cp312-cp312-win_amd64.whl
+          curl -L -o support/wheels/py312/deepspeed-0.16.5-cp312-cp312-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/deepspeed-0.16.5-cp312-cp312-win_amd64.whl
+          curl -L -o support/wheels/py312/xformers-0.0.33-cp39-abi3-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/xformers-0.0.33+c159edc0.d20250906-cp39-abi3-win_amd64.whl
+
+          # Python 3.13
+          curl -L -o support/wheels/py313/flash_attn-2.8.2-cp313-cp313-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/flash_attn-2.8.2-cp313-cp313-win_amd64.whl
+          curl -L -o support/wheels/py313/sageattention-2.2.0+cu128torch2.8.0.post2-cp39-abi3-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/sageattention-2.2.0+cu128torch2.8.0.post2-cp39-abi3-win_amd64.whl
+          curl -L -o support/wheels/py313/insightface-0.7.3-cp313-cp313-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/insightface-0.7.3-cp313-cp313-win_amd64.whl
+          curl -L -o support/wheels/py313/xformers-0.0.33-cp39-abi3-win_amd64.whl https://huggingface.co/MonsterMMORPG/Wan_GGUF/resolve/main/xformers-0.0.33+c159edc0.d20250906-cp39-abi3-win_amd64.whl
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add support/
+          git commit -m "Auto-fetch HuggingFace support wheels"
+          git push
