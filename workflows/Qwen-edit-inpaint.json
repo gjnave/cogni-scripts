@@ -1,8 +1,8 @@
 {
   "id": "e468c201-d2f9-48dc-9d7d-9432d34e3b0b",
   "revision": 0,
-  "last_node_id": 203,
-  "last_link_id": 454,
+  "last_node_id": 204,
+  "last_link_id": 455,
   "nodes": [
     {
       "id": 8,
@@ -16,7 +16,7 @@
         46
       ],
       "flags": {},
-      "order": 30,
+      "order": 31,
       "mode": 0,
       "inputs": [
         {
@@ -135,11 +135,11 @@
         -190
       ],
       "size": [
-        214.64999389648438,
+        215.52206420898438,
         46
       ],
       "flags": {},
-      "order": 31,
+      "order": 32,
       "mode": 0,
       "inputs": [
         {
@@ -187,7 +187,7 @@
         254
       ],
       "flags": {},
-      "order": 8,
+      "order": 9,
       "mode": 4,
       "inputs": [
         {
@@ -245,11 +245,11 @@
         610
       ],
       "size": [
-        228.3249969482422,
+        230.82089233398438,
         78
       ],
       "flags": {},
-      "order": 12,
+      "order": 13,
       "mode": 4,
       "inputs": [
         {
@@ -307,7 +307,7 @@
         254
       ],
       "flags": {},
-      "order": 9,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -365,11 +365,11 @@
         580
       ],
       "size": [
-        228.3249969482422,
+        230.82089233398438,
         78
       ],
       "flags": {},
-      "order": 13,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
@@ -423,11 +423,11 @@
         710
       ],
       "size": [
-        196.67498779296875,
+        197.63925170898438,
         26
       ],
       "flags": {},
-      "order": 16,
+      "order": 19,
       "mode": 0,
       "inputs": [
         {
@@ -469,7 +469,7 @@
         254
       ],
       "flags": {},
-      "order": 20,
+      "order": 22,
       "mode": 0,
       "inputs": [
         {
@@ -531,7 +531,7 @@
         82
       ],
       "flags": {},
-      "order": 23,
+      "order": 25,
       "mode": 0,
       "inputs": [
         {
@@ -581,7 +581,7 @@
         246.00006103515625
       ],
       "flags": {},
-      "order": 27,
+      "order": 28,
       "mode": 0,
       "inputs": [
         {
@@ -611,11 +611,11 @@
         740
       ],
       "size": [
-        196.67498779296875,
+        197.63925170898438,
         26
       ],
       "flags": {},
-      "order": 15,
+      "order": 16,
       "mode": 4,
       "inputs": [
         {
@@ -657,7 +657,7 @@
         254
       ],
       "flags": {},
-      "order": 19,
+      "order": 20,
       "mode": 4,
       "inputs": [
         {
@@ -719,7 +719,7 @@
         82
       ],
       "flags": {},
-      "order": 22,
+      "order": 23,
       "mode": 4,
       "inputs": [
         {
@@ -769,7 +769,7 @@
         474.0000305175781
       ],
       "flags": {},
-      "order": 29,
+      "order": 30,
       "mode": 0,
       "inputs": [
         {
@@ -880,7 +880,7 @@
         }
       },
       "widgets_values": [
-        "width: 1106, height: 948\n batch size: 1"
+        "width: 1176, height: 892\n batch size: 1"
       ]
     },
     {
@@ -1023,7 +1023,7 @@
         270.0000305175781
       ],
       "flags": {},
-      "order": 32,
+      "order": 33,
       "mode": 0,
       "inputs": [
         {
@@ -1059,7 +1059,7 @@
         460
       ],
       "flags": {},
-      "order": 33,
+      "order": 34,
       "mode": 0,
       "inputs": [
         {
@@ -1144,52 +1144,6 @@
         "qwen_2.5_vl_7b_fp8_scaled.safetensors",
         "qwen_image",
         "default"
-      ]
-    },
-    {
-      "id": 62,
-      "type": "LoadImage",
-      "pos": [
-        -180,
-        580
-      ],
-      "size": [
-        360,
-        326
-      ],
-      "flags": {
-        "collapsed": false
-      },
-      "order": 3,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            164
-          ]
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": null
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.44",
-        "Node name for S&R": "LoadImage",
-        "ue_properties": {
-          "version": "7.1",
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "1_PS260923werewolfcolour-2763295183.jpg",
-        "image"
       ]
     },
     {
@@ -1296,7 +1250,7 @@
         88
       ],
       "flags": {},
-      "order": 4,
+      "order": 3,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -1325,7 +1279,7 @@
         58
       ],
       "flags": {},
-      "order": 5,
+      "order": 4,
       "mode": 0,
       "inputs": [],
       "outputs": [
@@ -1358,56 +1312,6 @@
       "bgcolor": "#593930"
     },
     {
-      "id": 168,
-      "type": "LoadImage",
-      "pos": [
-        -110,
-        -280
-      ],
-      "size": [
-        274.07501220703125,
-        314
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "links": [
-            384,
-            388
-          ]
-        },
-        {
-          "name": "MASK",
-          "type": "MASK",
-          "links": [
-            385
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.59",
-        "Node name for S&R": "LoadImage",
-        "ue_properties": {
-          "widget_ue_connectable": {
-            "image": true,
-            "upload": true
-          },
-          "version": "7.1",
-          "input_ue_unconnectable": {}
-        }
-      },
-      "widgets_values": [
-        "clipspace/clipspace-painted-masked-3556048.png [input]",
-        "image"
-      ]
-    },
-    {
       "id": 155,
       "type": "ModelSamplingAuraFlow",
       "pos": [
@@ -1419,13 +1323,13 @@
         60
       ],
       "flags": {},
-      "order": 11,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
           "name": "model",
           "type": "MODEL",
-          "link": 454
+          "link": 455
         }
       ],
       "outputs": [
@@ -1530,7 +1434,7 @@
       "flags": {
         "collapsed": true
       },
-      "order": 28,
+      "order": 29,
       "mode": 0,
       "inputs": [
         {
@@ -1647,7 +1551,7 @@
         246
       ],
       "flags": {},
-      "order": 25,
+      "order": 26,
       "mode": 4,
       "inputs": [
         {
@@ -1670,6 +1574,102 @@
       "widgets_values": []
     },
     {
+      "id": 168,
+      "type": "LoadImage",
+      "pos": [
+        -110,
+        -280
+      ],
+      "size": [
+        274.07501220703125,
+        314
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            384,
+            388
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": [
+            385
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.59",
+        "Node name for S&R": "LoadImage",
+        "ue_properties": {
+          "widget_ue_connectable": {
+            "image": true,
+            "upload": true
+          },
+          "version": "7.1",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "clipspace/clipspace-painted-masked-51783.png [input]",
+        "image"
+      ]
+    },
+    {
+      "id": 62,
+      "type": "LoadImage",
+      "pos": [
+        -180,
+        580
+      ],
+      "size": [
+        360,
+        326
+      ],
+      "flags": {
+        "collapsed": false
+      },
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            164
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.44",
+        "Node name for S&R": "LoadImage",
+        "ue_properties": {
+          "version": "7.1",
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "clipspace/clipspace-painted-masked-105624.png [input]",
+        "image"
+      ]
+    },
+    {
       "id": 137,
       "type": "TextEncodeQwenImageEditPlus",
       "pos": [
@@ -1681,7 +1681,7 @@
         200
       ],
       "flags": {},
-      "order": 26,
+      "order": 27,
       "mode": 0,
       "inputs": [
         {
@@ -1736,15 +1736,15 @@
         }
       },
       "widgets_values": [
-        "put the werewolf here. keep everything else the same"
+        "put the cowboy hat on the man"
       ]
     },
     {
       "id": 203,
       "type": "UNETLoader",
       "pos": [
-        -130,
-        120
+        -97.76433563232422,
+        86.86909484863281
       ],
       "size": [
         270,
@@ -1758,9 +1758,7 @@
         {
           "name": "MODEL",
           "type": "MODEL",
-          "links": [
-            454
-          ]
+          "links": []
         }
       ],
       "properties": {
@@ -1771,6 +1769,45 @@
       "widgets_values": [
         "Qwen-Image-Edit-2509-Q5_1.gguf",
         "default"
+      ]
+    },
+    {
+      "id": 204,
+      "type": "GGUFLoaderKJ",
+      "pos": [
+        -481.338134765625,
+        98.83639526367188
+      ],
+      "size": [
+        307.443359375,
+        202
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            455
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfyui-kjnodes",
+        "ver": "9d7af919b91838fb22e31ad0107a6ddcf8bd7f3f",
+        "Node name for S&R": "GGUFLoaderKJ"
+      },
+      "widgets_values": [
+        "Qwen-Image-Edit-2509-Q5_K_S.gguf",
+        "none",
+        "default",
+        "default",
+        false,
+        false,
+        "none"
       ]
     }
   ],
@@ -2136,8 +2173,8 @@
       "CONDITIONING"
     ],
     [
-      454,
-      203,
+      455,
+      204,
       0,
       155,
       0,
@@ -2150,13 +2187,13 @@
     "ds": {
       "scale": 1.1167815779424808,
       "offset": [
-        476.86112925005517,
-        469.31416415048346
+        531.4823740886236,
+        125.46895074047295
       ]
     },
+    "frontendVersion": "1.26.13",
     "ue_links": [],
     "links_added_by_ue": [],
-    "frontendVersion": "1.26.13",
     "VHS_latentpreview": false,
     "VHS_latentpreviewrate": 0,
     "VHS_MetadataImage": true,
