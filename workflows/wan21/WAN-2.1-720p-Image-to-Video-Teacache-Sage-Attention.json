@@ -1,0 +1,833 @@
+{
+  "last_node_id": 59,
+  "last_link_id": 116,
+  "nodes": [
+    {
+      "id": 38,
+      "type": "CLIPLoader",
+      "pos": [
+        12.94982624053955,
+        184.6981658935547
+      ],
+      "size": [
+        390,
+        98
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            74,
+            75
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPLoader"
+      },
+      "widgets_values": [
+        "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+        "wan",
+        "default"
+      ]
+    },
+    {
+      "id": 7,
+      "type": "CLIPTextEncode",
+      "pos": [
+        413,
+        389
+      ],
+      "size": [
+        425.27801513671875,
+        180.6060791015625
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 75
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            98
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "CLIP Text Encode (Negative Prompt)",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "Overexposure, static, blurred details, subtitles, paintings, pictures, still, overall gray, worst quality, low quality, JPEG compression residue, ugly, mutilated, redundant fingers, poorly painted hands, poorly painted faces, deformed, disfigured, deformed limbs, fused fingers, cluttered background, three legs, a lot of people in the background, upside down"
+      ],
+      "color": "#322",
+      "bgcolor": "#533"
+    },
+    {
+      "id": 39,
+      "type": "VAELoader",
+      "pos": [
+        866.3932495117188,
+        499.18597412109375
+      ],
+      "size": [
+        306.36004638671875,
+        58
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "VAE",
+          "type": "VAE",
+          "links": [
+            99,
+            115
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAELoader"
+      },
+      "widgets_values": [
+        "wan_2.1_vae.safetensors"
+      ]
+    },
+    {
+      "id": 59,
+      "type": "VAEDecodeTiled",
+      "pos": [
+        1259.9376220703125,
+        186.15692138671875
+      ],
+      "size": [
+        315,
+        150
+      ],
+      "flags": {},
+      "order": 13,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "samples",
+          "type": "LATENT",
+          "link": 114
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 115
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            116
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VAEDecodeTiled"
+      },
+      "widgets_values": [
+        512,
+        64,
+        64,
+        8
+      ]
+    },
+    {
+      "id": 54,
+      "type": "VHS_VideoCombine",
+      "pos": [
+        1664.77587890625,
+        185.45538330078125
+      ],
+      "size": [
+        517.4603271484375,
+        1232.3739013671875
+      ],
+      "flags": {},
+      "order": 14,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 116
+        },
+        {
+          "name": "audio",
+          "type": "AUDIO",
+          "shape": 7,
+          "link": null
+        },
+        {
+          "name": "meta_batch",
+          "type": "VHS_BatchManager",
+          "shape": 7,
+          "link": null
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "shape": 7,
+          "link": null
+        }
+      ],
+      "outputs": [
+        {
+          "name": "Filenames",
+          "type": "VHS_FILENAMES",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "VHS_VideoCombine"
+      },
+      "widgets_values": {
+        "frame_rate": 16,
+        "loop_count": 0,
+        "filename_prefix": "InstaSD",
+        "format": "video/h264-mp4",
+        "pix_fmt": "yuv420p",
+        "crf": 19,
+        "save_metadata": true,
+        "trim_to_audio": false,
+        "pingpong": false,
+        "save_output": true,
+        "videopreview": {
+          "hidden": false,
+          "paused": false,
+          "params": {
+            "filename": "InstaSD_00004.mp4",
+            "subfolder": "",
+            "type": "output",
+            "format": "video/h264-mp4",
+            "frame_rate": 16,
+            "workflow": "InstaSD_00004.png",
+            "fullpath": "C:\\Users\\users_uyemc1z\\git\\ComfyUI\\output\\InstaSD_00004.mp4"
+          }
+        }
+      }
+    },
+    {
+      "id": 58,
+      "type": "Note",
+      "pos": [
+        864.3278198242188,
+        -203.68109130859375
+      ],
+      "size": [
+        300.7130432128906,
+        113.94709014892578
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "properties": {},
+      "widgets_values": [
+        "These settings seems to produce the most consistent results. You can start at 0 but you get a lot of artifacts and not worth the speed gain."
+      ],
+      "color": "#322",
+      "bgcolor": "#533"
+    },
+    {
+      "id": 49,
+      "type": "CLIPVisionLoader",
+      "pos": [
+        409.3988037109375,
+        643.5714111328125
+      ],
+      "size": [
+        242.64715576171875,
+        58.371742248535156
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP_VISION",
+          "type": "CLIP_VISION",
+          "links": [
+            94
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPVisionLoader"
+      },
+      "widgets_values": [
+        "clip_vision_h.safetensors"
+      ]
+    },
+    {
+      "id": 51,
+      "type": "CLIPVisionEncode",
+      "pos": [
+        409.5618591308594,
+        750.1879272460938
+      ],
+      "size": [
+        253.60000610351562,
+        78
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip_vision",
+          "type": "CLIP_VISION",
+          "link": 94
+        },
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "link": 109
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CLIP_VISION_OUTPUT",
+          "type": "CLIP_VISION_OUTPUT",
+          "links": [
+            107
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CLIPVisionEncode"
+      },
+      "widgets_values": [
+        "none"
+      ]
+    },
+    {
+      "id": 37,
+      "type": "UNETLoader",
+      "pos": [
+        16.363969802856445,
+        -22.83881378173828
+      ],
+      "size": [
+        346.7470703125,
+        82
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            111
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "UNETLoader"
+      },
+      "widgets_values": [
+        "wan2.1_i2v_720p_14B_fp8_e4m3fn.safetensors",
+        "default"
+      ]
+    },
+    {
+      "id": 50,
+      "type": "WanImageToVideo",
+      "pos": [
+        673.0507202148438,
+        627.272705078125
+      ],
+      "size": [
+        342.5999755859375,
+        210
+      ],
+      "flags": {},
+      "order": 11,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 97
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 98
+        },
+        {
+          "name": "vae",
+          "type": "VAE",
+          "link": 99
+        },
+        {
+          "name": "clip_vision_output",
+          "type": "CLIP_VISION_OUTPUT",
+          "shape": 7,
+          "link": 107
+        },
+        {
+          "name": "start_image",
+          "type": "IMAGE",
+          "shape": 7,
+          "link": 106
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "links": [
+            101
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "links": [
+            102
+          ],
+          "slot_index": 1
+        },
+        {
+          "name": "latent",
+          "type": "LATENT",
+          "links": [
+            103
+          ],
+          "slot_index": 2
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "WanImageToVideo"
+      },
+      "widgets_values": [
+        720,
+        1280,
+        33,
+        1
+      ]
+    },
+    {
+      "id": 3,
+      "type": "KSampler",
+      "pos": [
+        863,
+        187
+      ],
+      "size": [
+        315,
+        262
+      ],
+      "flags": {},
+      "order": 12,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 113
+        },
+        {
+          "name": "positive",
+          "type": "CONDITIONING",
+          "link": 101
+        },
+        {
+          "name": "negative",
+          "type": "CONDITIONING",
+          "link": 102
+        },
+        {
+          "name": "latent_image",
+          "type": "LATENT",
+          "link": 103
+        }
+      ],
+      "outputs": [
+        {
+          "name": "LATENT",
+          "type": "LATENT",
+          "links": [
+            114
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "KSampler"
+      },
+      "widgets_values": [
+        181379188994457,
+        "fixed",
+        20,
+        6,
+        "uni_pc",
+        "simple",
+        1
+      ]
+    },
+    {
+      "id": 6,
+      "type": "CLIPTextEncode",
+      "pos": [
+        415,
+        186
+      ],
+      "size": [
+        422.84503173828125,
+        164.31304931640625
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 74
+        }
+      ],
+      "outputs": [
+        {
+          "name": "CONDITIONING",
+          "type": "CONDITIONING",
+          "links": [
+            97
+          ],
+          "slot_index": 0
+        }
+      ],
+      "title": "CLIP Text Encode (Positive Prompt)",
+      "properties": {
+        "Node name for S&R": "CLIPTextEncode"
+      },
+      "widgets_values": [
+        "A muscular young barbarian warrior with long gray hair and a beard, wielding a large battle axe, riding a massive white horned feline beast with fierce fangs, running very fast."
+      ],
+      "color": "#232",
+      "bgcolor": "#353"
+    },
+    {
+      "id": 56,
+      "type": "WanVideoTeaCacheKJ",
+      "pos": [
+        814.389404296875,
+        -33.698001861572266
+      ],
+      "size": [
+        307.9113464355469,
+        154
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 112
+        }
+      ],
+      "outputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "links": [
+            113
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "WanVideoTeaCacheKJ"
+      },
+      "widgets_values": [
+        0.3,
+        0.2,
+        1,
+        "offload_device",
+        "i2v_720"
+      ]
+    },
+    {
+      "id": 57,
+      "type": "PathchSageAttentionKJ",
+      "pos": [
+        451.4356994628906,
+        -17.01001739501953
+      ],
+      "size": [
+        315,
+        58
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 111
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            112
+          ],
+          "slot_index": 0
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PathchSageAttentionKJ"
+      },
+      "widgets_values": [
+        "auto"
+      ]
+    },
+    {
+      "id": 52,
+      "type": "LoadImage",
+      "pos": [
+        38.275882720947266,
+        652.3800659179688
+      ],
+      "size": [
+        315,
+        314
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            106,
+            109
+          ],
+          "slot_index": 0
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": null,
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "barbarian.png",
+        "image"
+      ]
+    }
+  ],
+  "links": [
+    [
+      74,
+      38,
+      0,
+      6,
+      0,
+      "CLIP"
+    ],
+    [
+      75,
+      38,
+      0,
+      7,
+      0,
+      "CLIP"
+    ],
+    [
+      94,
+      49,
+      0,
+      51,
+      0,
+      "CLIP_VISION"
+    ],
+    [
+      97,
+      6,
+      0,
+      50,
+      0,
+      "CONDITIONING"
+    ],
+    [
+      98,
+      7,
+      0,
+      50,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      99,
+      39,
+      0,
+      50,
+      2,
+      "VAE"
+    ],
+    [
+      101,
+      50,
+      0,
+      3,
+      1,
+      "CONDITIONING"
+    ],
+    [
+      102,
+      50,
+      1,
+      3,
+      2,
+      "CONDITIONING"
+    ],
+    [
+      103,
+      50,
+      2,
+      3,
+      3,
+      "LATENT"
+    ],
+    [
+      106,
+      52,
+      0,
+      50,
+      4,
+      "IMAGE"
+    ],
+    [
+      107,
+      51,
+      0,
+      50,
+      3,
+      "CLIP_VISION_OUTPUT"
+    ],
+    [
+      109,
+      52,
+      0,
+      51,
+      1,
+      "IMAGE"
+    ],
+    [
+      111,
+      37,
+      0,
+      57,
+      0,
+      "MODEL"
+    ],
+    [
+      112,
+      57,
+      0,
+      56,
+      0,
+      "MODEL"
+    ],
+    [
+      113,
+      56,
+      0,
+      3,
+      0,
+      "MODEL"
+    ],
+    [
+      114,
+      3,
+      0,
+      59,
+      0,
+      "LATENT"
+    ],
+    [
+      115,
+      39,
+      0,
+      59,
+      1,
+      "VAE"
+    ],
+    [
+      116,
+      59,
+      0,
+      54,
+      0,
+      "IMAGE"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.8367552658726577,
+      "offset": [
+        392.40872657749475,
+        159.1492088387752
+      ]
+    },
+    "node_versions": {
+      "comfy-core": "0.3.26",
+      "ComfyUI-VideoHelperSuite": "4c7858ddd5126f7293dc3c9f6e0fc4c263cde079",
+      "ComfyUI-KJNodes": "0addfc6101f7a834c7fb6e0a1b26529360ab5350"
+    },
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}
