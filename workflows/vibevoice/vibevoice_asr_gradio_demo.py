@@ -925,7 +925,7 @@ def create_gradio_interface(model_path: str, default_max_tokens: int = 8192, att
     # Gradio 6.0+ moved theme/css to launch()
     with gr.Blocks(title="VibeVoice ASR Demo") as demo:
         gr.Markdown("# 🎙️ VibeVoice ASR Demo")
-        gr.Markdown("[⚡ Get Going Fast](https://getgoingfast.pro)")
+        gr.Markdown("[⚡ Get Going Fast for more AI Apps and Installers](https://getgoingfast.pro)")
         gr.Markdown("Upload audio files or record from microphone to get speech-to-text transcription with speaker diarization.")
         gr.Markdown(f"**Model loaded from:** `{model_path}`")
         
@@ -1176,3 +1176,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
