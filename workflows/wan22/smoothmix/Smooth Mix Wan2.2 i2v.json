@@ -1,8 +1,8 @@
 {
   "id": "5cad9e46-c9d0-4814-9279-2731a15cd49b",
   "revision": 0,
-  "last_node_id": 55,
-  "last_link_id": 75,
+  "last_node_id": 57,
+  "last_link_id": 77,
   "nodes": [
     {
       "id": 29,
@@ -18,14 +18,14 @@
       "flags": {
         "collapsed": false
       },
-      "order": 10,
+      "order": 13,
       "mode": 0,
       "inputs": [
         {
           "label": "model",
           "name": "model",
           "type": "MODEL",
-          "link": 30
+          "link": 77
         },
         {
           "label": "shift",
@@ -48,9 +48,9 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "ModelSamplingSD3",
         "cnr_id": "comfy-core",
         "ver": "0.3.45",
+        "Node name for S&R": "ModelSamplingSD3",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -75,14 +75,14 @@
         60
       ],
       "flags": {},
-      "order": 9,
+      "order": 14,
       "mode": 0,
       "inputs": [
         {
           "label": "model",
           "name": "model",
           "type": "MODEL",
-          "link": 34
+          "link": 76
         },
         {
           "label": "shift",
@@ -105,9 +105,9 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "ModelSamplingSD3",
         "cnr_id": "comfy-core",
         "ver": "0.3.45",
+        "Node name for S&R": "ModelSamplingSD3",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -117,218 +117,6 @@
       },
       "widgets_values": [
         8.000000000000002
-      ],
-      "shape": 1
-    },
-    {
-      "id": 25,
-      "type": "UNETLoader",
-      "pos": [
-        3550.840087890625,
-        1339.0401611328125
-      ],
-      "size": [
-        552.5474853515625,
-        82
-      ],
-      "flags": {},
-      "order": 0,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "unet_name",
-          "name": "unet_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "unet_name"
-          }
-        },
-        {
-          "label": "weight_dtype",
-          "name": "weight_dtype",
-          "type": "COMBO",
-          "widget": {
-            "name": "weight_dtype"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "label": "MODEL",
-          "name": "MODEL",
-          "type": "MODEL",
-          "slot_index": 0,
-          "links": [
-            34
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "UNETLoader",
-        "cnr_id": "comfy-core",
-        "models": [
-          {
-            "name": "wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors",
-            "directory": "diffusion_models",
-            "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors"
-          }
-        ],
-        "ver": "0.3.45",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.1"
-        },
-        "widget_ue_connectable": {}
-      },
-      "widgets_values": [
-        "smoothMixWan22I2V14B_i2vHigh.safetensors",
-        "default"
-      ],
-      "shape": 1
-    },
-    {
-      "id": 26,
-      "type": "UNETLoader",
-      "pos": [
-        3558.44873046875,
-        1494.1895751953125
-      ],
-      "size": [
-        504.4148864746094,
-        82
-      ],
-      "flags": {},
-      "order": 1,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "unet_name",
-          "name": "unet_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "unet_name"
-          }
-        },
-        {
-          "label": "weight_dtype",
-          "name": "weight_dtype",
-          "type": "COMBO",
-          "widget": {
-            "name": "weight_dtype"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "label": "MODEL",
-          "name": "MODEL",
-          "type": "MODEL",
-          "slot_index": 0,
-          "links": [
-            30
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "UNETLoader",
-        "cnr_id": "comfy-core",
-        "models": [
-          {
-            "name": "wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors",
-            "directory": "diffusion_models",
-            "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors"
-          }
-        ],
-        "ver": "0.3.45",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.1"
-        },
-        "widget_ue_connectable": {}
-      },
-      "widgets_values": [
-        "smoothMixWan22I2V14B_i2vLow.safetensors",
-        "default"
-      ],
-      "shape": 1
-    },
-    {
-      "id": 27,
-      "type": "CLIPLoader",
-      "pos": [
-        3602.312744140625,
-        1634.237060546875
-      ],
-      "size": [
-        490.8005676269531,
-        106
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "clip_name",
-          "name": "clip_name",
-          "type": "COMBO",
-          "widget": {
-            "name": "clip_name"
-          }
-        },
-        {
-          "label": "type",
-          "name": "type",
-          "type": "COMBO",
-          "widget": {
-            "name": "type"
-          }
-        },
-        {
-          "label": "device",
-          "name": "device",
-          "shape": 7,
-          "type": "COMBO",
-          "widget": {
-            "name": "device"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "label": "CLIP",
-          "name": "CLIP",
-          "type": "CLIP",
-          "slot_index": 0,
-          "links": [
-            31,
-            33
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "CLIPLoader",
-        "cnr_id": "comfy-core",
-        "models": [
-          {
-            "name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
-            "directory": "text_encoders",
-            "url": "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors"
-          }
-        ],
-        "ver": "0.3.45",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.1"
-        },
-        "widget_ue_connectable": {}
-      },
-      "widgets_values": [
-        "umt5_xxl_fp16.safetensors",
-        "wan",
-        "default"
       ],
       "shape": 1
     },
@@ -344,7 +132,7 @@
         58
       ],
       "flags": {},
-      "order": 3,
+      "order": 0,
       "mode": 0,
       "inputs": [
         {
@@ -369,8 +157,9 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "VAELoader",
         "cnr_id": "comfy-core",
+        "ver": "0.3.45",
+        "Node name for S&R": "VAELoader",
         "models": [
           {
             "name": "wan_2.1_vae.safetensors",
@@ -378,7 +167,6 @@
             "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/vae/wan_2.1_vae.safetensors"
           }
         ],
-        "ver": "0.3.45",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -403,7 +191,7 @@
         46
       ],
       "flags": {},
-      "order": 17,
+      "order": 19,
       "mode": 0,
       "inputs": [
         {
@@ -431,9 +219,9 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "VAEDecode",
         "cnr_id": "comfy-core",
         "ver": "0.3.45",
+        "Node name for S&R": "VAEDecode",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -486,9 +274,9 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "CLIPTextEncode",
         "cnr_id": "comfy-core",
         "ver": "0.3.45",
+        "Node name for S&R": "CLIPTextEncode",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -515,7 +303,7 @@
         58
       ],
       "flags": {},
-      "order": 4,
+      "order": 1,
       "mode": 0,
       "inputs": [
         {
@@ -538,81 +326,14 @@
         }
       ],
       "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.13.0",
         "Node name for S&R": "CLIPVisionLoader",
         "widget_ue_connectable": {}
       },
       "widgets_values": [
         "clip_vision_h.safetensors"
       ],
-      "shape": 1
-    },
-    {
-      "id": 43,
-      "type": "LoadImage",
-      "pos": [
-        3056.37255859375,
-        1919.7843017578125
-      ],
-      "size": [
-        390.99468994140625,
-        656.1271362304688
-      ],
-      "flags": {},
-      "order": 5,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "image",
-          "name": "image",
-          "type": "COMBO",
-          "widget": {
-            "name": "image"
-          }
-        },
-        {
-          "label": "upload",
-          "name": "upload",
-          "type": "IMAGEUPLOAD",
-          "widget": {
-            "name": "upload"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "label": "IMAGE",
-          "name": "IMAGE",
-          "type": "IMAGE",
-          "slot_index": 0,
-          "links": [
-            29,
-            61
-          ]
-        },
-        {
-          "label": "MASK",
-          "name": "MASK",
-          "type": "MASK",
-          "slot_index": 1
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "LoadImage",
-        "cnr_id": "comfy-core",
-        "ver": "0.3.45",
-        "ue_properties": {
-          "widget_ue_connectable": {},
-          "input_ue_unconnectable": {},
-          "version": "7.1"
-        },
-        "widget_ue_connectable": {}
-      },
-      "widgets_values": [
-        "e63e35521b48eed1d7416591f8357db0f271e8c298c5574500cb386c800dd28b.jpg",
-        "image"
-      ],
-      "color": "#2a363b",
-      "bgcolor": "#3f5159",
       "shape": 1
     },
     {
@@ -657,9 +378,9 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "CLIPTextEncode",
         "cnr_id": "comfy-core",
         "ver": "0.3.45",
+        "Node name for S&R": "CLIPTextEncode",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -686,7 +407,7 @@
         210
       ],
       "flags": {},
-      "order": 14,
+      "order": 16,
       "mode": 0,
       "inputs": [
         {
@@ -786,6 +507,8 @@
         }
       ],
       "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.13.0",
         "Node name for S&R": "WanImageToVideo",
         "widget_ue_connectable": {}
       },
@@ -808,7 +531,7 @@
         78
       ],
       "flags": {},
-      "order": 13,
+      "order": 15,
       "mode": 0,
       "inputs": [
         {
@@ -843,6 +566,8 @@
         }
       ],
       "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.13.0",
         "Node name for S&R": "CLIPVisionEncode",
         "widget_ue_connectable": {}
       },
@@ -860,10 +585,10 @@
       ],
       "size": [
         498.8890686035156,
-        648.2821655273438
+        334
       ],
       "flags": {},
-      "order": 18,
+      "order": 20,
       "mode": 0,
       "inputs": [
         {
@@ -937,15 +662,6 @@
           "widget": {
             "name": "save_output"
           }
-        },
-        {
-          "label": "no_preview",
-          "name": "no_preview",
-          "shape": 7,
-          "type": "BOOLEAN",
-          "widget": {
-            "name": "no_preview"
-          }
         }
       ],
       "outputs": [
@@ -956,6 +672,8 @@
         }
       ],
       "properties": {
+        "cnr_id": "comfyui-videohelpersuite",
+        "ver": "993082e4f2473bf4acaf06f51e33877a7eb38960",
         "Node name for S&R": "VHS_VideoCombine",
         "widget_ue_connectable": {}
       },
@@ -970,7 +688,6 @@
         "trim_to_audio": false,
         "pingpong": false,
         "save_output": true,
-        "no_preview": false,
         "videopreview": {
           "paused": false,
           "hidden": false,
@@ -1003,7 +720,7 @@
         546
       ],
       "flags": {},
-      "order": 16,
+      "order": 18,
       "mode": 0,
       "inputs": [
         {
@@ -1114,9 +831,9 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "KSamplerAdvanced",
         "cnr_id": "comfy-core",
         "ver": "0.3.45",
+        "Node name for S&R": "KSamplerAdvanced",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -1126,7 +843,7 @@
       },
       "widgets_values": [
         "disable",
-        968105299929560,
+        198073576862321,
         "randomize",
         6,
         1,
@@ -1150,7 +867,7 @@
         546
       ],
       "flags": {},
-      "order": 15,
+      "order": 17,
       "mode": 0,
       "inputs": [
         {
@@ -1261,9 +978,9 @@
         }
       ],
       "properties": {
-        "Node name for S&R": "KSamplerAdvanced",
         "cnr_id": "comfy-core",
         "ver": "0.3.45",
+        "Node name for S&R": "KSamplerAdvanced",
         "ue_properties": {
           "widget_ue_connectable": {},
           "input_ue_unconnectable": {},
@@ -1273,7 +990,7 @@
       },
       "widgets_values": [
         "enable",
-        29428253116070,
+        145690486385987,
         "randomize",
         6,
         1,
@@ -1283,98 +1000,6 @@
         3,
         "enable"
       ],
-      "shape": 1
-    },
-    {
-      "id": 35,
-      "type": "PrimitiveInt",
-      "pos": [
-        3725.24951171875,
-        1951.3380126953125
-      ],
-      "size": [
-        355.9410095214844,
-        89.56729888916016
-      ],
-      "flags": {},
-      "order": 6,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "value",
-          "name": "value",
-          "type": "INT",
-          "widget": {
-            "name": "value"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "label": "INT",
-          "name": "INT",
-          "type": "INT",
-          "links": [
-            73
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "PrimitiveInt",
-        "widget_ue_connectable": {}
-      },
-      "widgets_values": [
-        1024,
-        "fixed"
-      ],
-      "color": "#232",
-      "bgcolor": "#353",
-      "shape": 1
-    },
-    {
-      "id": 36,
-      "type": "PrimitiveInt",
-      "pos": [
-        3728.022216796875,
-        2082.385986328125
-      ],
-      "size": [
-        369.9945373535156,
-        82
-      ],
-      "flags": {},
-      "order": 7,
-      "mode": 0,
-      "inputs": [
-        {
-          "label": "value",
-          "name": "value",
-          "type": "INT",
-          "widget": {
-            "name": "value"
-          }
-        }
-      ],
-      "outputs": [
-        {
-          "label": "INT",
-          "name": "INT",
-          "type": "INT",
-          "links": [
-            74
-          ]
-        }
-      ],
-      "properties": {
-        "Node name for S&R": "PrimitiveInt",
-        "widget_ue_connectable": {}
-      },
-      "widgets_values": [
-        1024,
-        "fixed"
-      ],
-      "color": "#232",
-      "bgcolor": "#353",
       "shape": 1
     },
     {
@@ -1389,7 +1014,7 @@
         82
       ],
       "flags": {},
-      "order": 8,
+      "order": 2,
       "mode": 0,
       "inputs": [
         {
@@ -1412,11 +1037,452 @@
         }
       ],
       "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.13.0",
         "Node name for S&R": "PrimitiveInt",
         "widget_ue_connectable": {}
       },
       "widgets_values": [
         121,
+        "fixed"
+      ],
+      "color": "#232",
+      "bgcolor": "#353",
+      "shape": 1
+    },
+    {
+      "id": 25,
+      "type": "UNETLoader",
+      "pos": [
+        3542.2574919864583,
+        1275.385521842492
+      ],
+      "size": [
+        552.5474853515625,
+        82
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "unet_name",
+          "name": "unet_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "unet_name"
+          }
+        },
+        {
+          "label": "weight_dtype",
+          "name": "weight_dtype",
+          "type": "COMBO",
+          "widget": {
+            "name": "weight_dtype"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "label": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "slot_index": 0,
+          "links": []
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.45",
+        "Node name for S&R": "UNETLoader",
+        "models": [
+          {
+            "name": "wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors",
+            "directory": "diffusion_models",
+            "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors"
+          }
+        ],
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.1"
+        },
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "smoothMixWan22I2V14B_i2vHigh.safetensors",
+        "default"
+      ],
+      "shape": 1
+    },
+    {
+      "id": 27,
+      "type": "CLIPLoader",
+      "pos": [
+        3606.6041206692,
+        1664.9915458819528
+      ],
+      "size": [
+        490.8005676269531,
+        106
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "clip_name",
+          "name": "clip_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "clip_name"
+          }
+        },
+        {
+          "label": "type",
+          "name": "type",
+          "type": "COMBO",
+          "widget": {
+            "name": "type"
+          }
+        },
+        {
+          "label": "device",
+          "name": "device",
+          "shape": 7,
+          "type": "COMBO",
+          "widget": {
+            "name": "device"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "label": "CLIP",
+          "name": "CLIP",
+          "type": "CLIP",
+          "slot_index": 0,
+          "links": [
+            31,
+            33
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.45",
+        "Node name for S&R": "CLIPLoader",
+        "models": [
+          {
+            "name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+            "directory": "text_encoders",
+            "url": "https://huggingface.co/Comfy-Org/Wan_2.1_ComfyUI_repackaged/resolve/main/split_files/text_encoders/umt5_xxl_fp8_e4m3fn_scaled.safetensors"
+          }
+        ],
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.1"
+        },
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "umt5_xxl_fp16.safetensors",
+        "wan",
+        "default"
+      ],
+      "shape": 1
+    },
+    {
+      "id": 26,
+      "type": "UNETLoader",
+      "pos": [
+        3602.79243075408,
+        1512.0700880976485
+      ],
+      "size": [
+        504.4148864746094,
+        82
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "unet_name",
+          "name": "unet_name",
+          "type": "COMBO",
+          "widget": {
+            "name": "unet_name"
+          }
+        },
+        {
+          "label": "weight_dtype",
+          "name": "weight_dtype",
+          "type": "COMBO",
+          "widget": {
+            "name": "weight_dtype"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "label": "MODEL",
+          "name": "MODEL",
+          "type": "MODEL",
+          "slot_index": 0,
+          "links": []
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.45",
+        "Node name for S&R": "UNETLoader",
+        "models": [
+          {
+            "name": "wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors",
+            "directory": "diffusion_models",
+            "url": "https://huggingface.co/Comfy-Org/Wan_2.2_ComfyUI_Repackaged/resolve/main/split_files/diffusion_models/wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors"
+          }
+        ],
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.1"
+        },
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "smoothMixWan22I2V14B_i2vLow.safetensors",
+        "default"
+      ],
+      "shape": 1
+    },
+    {
+      "id": 57,
+      "type": "UnetLoaderGGUF",
+      "pos": [
+        3871.9558797134187,
+        1401.1270411104977
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            77
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI-GGUF",
+        "ver": "6ea2651e7df66d7585f6ffee804b20e92fb38b8a",
+        "Node name for S&R": "UnetLoaderGGUF"
+      },
+      "widgets_values": [
+        "SmoothMix_I2V_v2_Low-Q4_K_M.gguf"
+      ]
+    },
+    {
+      "id": 56,
+      "type": "UnetLoaderGGUF",
+      "pos": [
+        3871.247177665504,
+        1170.8325333595803
+      ],
+      "size": [
+        270,
+        58
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            76
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "ComfyUI-GGUF",
+        "ver": "6ea2651e7df66d7585f6ffee804b20e92fb38b8a",
+        "Node name for S&R": "UnetLoaderGGUF"
+      },
+      "widgets_values": [
+        "SmoothMix_I2V_v2_High-Q4_K_M.gguf"
+      ]
+    },
+    {
+      "id": 43,
+      "type": "LoadImage",
+      "pos": [
+        3056.37255859375,
+        1919.7843017578125
+      ],
+      "size": [
+        390.99468994140625,
+        656.1271362304688
+      ],
+      "flags": {},
+      "order": 8,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "image",
+          "name": "image",
+          "type": "COMBO",
+          "widget": {
+            "name": "image"
+          }
+        },
+        {
+          "label": "upload",
+          "name": "upload",
+          "type": "IMAGEUPLOAD",
+          "widget": {
+            "name": "upload"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "label": "IMAGE",
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "slot_index": 0,
+          "links": [
+            29,
+            61
+          ]
+        },
+        {
+          "label": "MASK",
+          "name": "MASK",
+          "type": "MASK",
+          "slot_index": 1
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.45",
+        "Node name for S&R": "LoadImage",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {},
+          "version": "7.1"
+        },
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        "34.jpg",
+        "image"
+      ],
+      "color": "#2a363b",
+      "bgcolor": "#3f5159",
+      "shape": 1
+    },
+    {
+      "id": 35,
+      "type": "PrimitiveInt",
+      "pos": [
+        3725.24951171875,
+        1951.3380126953125
+      ],
+      "size": [
+        355.9410095214844,
+        89.56729888916016
+      ],
+      "flags": {},
+      "order": 9,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "value",
+          "name": "value",
+          "type": "INT",
+          "widget": {
+            "name": "value"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "label": "INT",
+          "name": "INT",
+          "type": "INT",
+          "links": [
+            73
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.13.0",
+        "Node name for S&R": "PrimitiveInt",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        480,
+        "fixed"
+      ],
+      "color": "#232",
+      "bgcolor": "#353",
+      "shape": 1
+    },
+    {
+      "id": 36,
+      "type": "PrimitiveInt",
+      "pos": [
+        3728.022216796875,
+        2082.385986328125
+      ],
+      "size": [
+        369.9945373535156,
+        82
+      ],
+      "flags": {},
+      "order": 10,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "value",
+          "name": "value",
+          "type": "INT",
+          "widget": {
+            "name": "value"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "label": "INT",
+          "name": "INT",
+          "type": "INT",
+          "links": [
+            74
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.13.0",
+        "Node name for S&R": "PrimitiveInt",
+        "widget_ue_connectable": {}
+      },
+      "widgets_values": [
+        480,
         "fixed"
       ],
       "color": "#232",
@@ -1442,14 +1508,6 @@
       "IMAGE"
     ],
     [
-      30,
-      26,
-      0,
-      29,
-      0,
-      "MODEL"
-    ],
-    [
       31,
       27,
       0,
@@ -1464,14 +1522,6 @@
       31,
       0,
       "CLIP"
-    ],
-    [
-      34,
-      25,
-      0,
-      32,
-      0,
-      "MODEL"
     ],
     [
       36,
@@ -1624,6 +1674,22 @@
       52,
       7,
       "INT"
+    ],
+    [
+      76,
+      56,
+      0,
+      32,
+      0,
+      "MODEL"
+    ],
+    [
+      77,
+      57,
+      0,
+      29,
+      0,
+      "MODEL"
     ]
   ],
   "groups": [],
@@ -1639,15 +1705,16 @@
       4
     ],
     "VHS_latentpreviewrate": 0,
-    "frontendVersion": "1.23.0",
+    "frontendVersion": "1.38.13",
     "VHS_latentpreview": false,
     "ds": {
       "scale": 1.5535220464769,
       "offset": [
-        -3660.256960407304,
-        -1884.1869007419405
+        -3095.947900919206,
+        -1484.3785324535609
       ]
-    }
+    },
+    "workflowRendererVersion": "LG"
   },
   "version": 0.4
 }
