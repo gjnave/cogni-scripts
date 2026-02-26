@@ -1,8 +1,8 @@
 {
   "id": "9ae6082b-c7f4-433c-9971-7a8f65a3ea65",
   "revision": 0,
-  "last_node_id": 75,
-  "last_link_id": 85,
+  "last_node_id": 77,
+  "last_link_id": 96,
   "nodes": [
     {
       "id": 70,
@@ -13,16 +13,16 @@
       ],
       "size": [
         310,
-        50
+        58
       ],
       "flags": {},
-      "order": 8,
+      "order": 7,
       "mode": 0,
       "inputs": [
         {
           "name": "model",
           "type": "MODEL",
-          "link": 71
+          "link": 93
         }
       ],
       "outputs": [
@@ -63,7 +63,7 @@
         595
       ],
       "flags": {},
-      "order": 11,
+      "order": 12,
       "mode": 0,
       "inputs": [
         {
@@ -93,21 +93,21 @@
       "id": 67,
       "type": "CLIPTextEncode",
       "pos": [
-        585.3334160505818,
-        -118.6667011003664
+        663.995831057389,
+        -107.30434159677694
       ],
       "size": [
         410,
         315
       ],
       "flags": {},
-      "order": 6,
+      "order": 8,
       "mode": 0,
       "inputs": [
         {
           "name": "clip",
           "type": "CLIP",
-          "link": 78
+          "link": 91
         }
       ],
       "outputs": [
@@ -150,7 +150,7 @@
         435
       ],
       "flags": {},
-      "order": 9,
+      "order": 10,
       "mode": 0,
       "inputs": [
         {
@@ -197,7 +197,7 @@
         "secondTabWidth": 65
       },
       "widgets_values": [
-        909396553000551,
+        1066903939586898,
         "randomize",
         25,
         4,
@@ -210,12 +210,12 @@
       "id": 68,
       "type": "EmptySD3LatentImage",
       "pos": [
-        280.3333893440612,
-        321.3333573663614
+        27.739607815687066,
+        323.9554698744069
       ],
       "size": [
         260,
-        98
+        106
       ],
       "flags": {},
       "order": 0,
@@ -253,12 +253,12 @@
       "id": 63,
       "type": "VAELoader",
       "pos": [
-        270.33337313052357,
-        161.33337863358537
+        29.97600461232999,
+        143.85283663076962
       ],
       "size": [
         270,
-        50
+        58
       ],
       "flags": {},
       "order": 1,
@@ -297,148 +297,24 @@
       ]
     },
     {
-      "id": 62,
-      "type": "CLIPLoader",
-      "pos": [
-        270.33337313052357,
-        11.333322553071866
-      ],
-      "size": [
-        270,
-        98
-      ],
-      "flags": {},
-      "order": 2,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "CLIP",
-          "type": "CLIP",
-          "links": [
-            78,
-            82
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.73",
-        "Node name for S&R": "CLIPLoader",
-        "models": [
-          {
-            "name": "qwen_3_4b.safetensors",
-            "url": "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/text_encoders/qwen_3_4b.safetensors",
-            "directory": "text_encoders"
-          }
-        ],
-        "enableTabs": false,
-        "tabWidth": 65,
-        "tabXOffset": 10,
-        "hasSecondTab": false,
-        "secondTabText": "Send Back",
-        "secondTabOffset": 80,
-        "secondTabWidth": 65
-      },
-      "widgets_values": [
-        "qwen_3_4b.safetensors",
-        "lumina2",
-        "default"
-      ]
-    },
-    {
-      "id": 66,
-      "type": "UNETLoader",
-      "pos": [
-        270.33337313052357,
-        -118.6667011003664
-      ],
-      "size": [
-        270,
-        74
-      ],
-      "flags": {},
-      "order": 3,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [
-        {
-          "name": "MODEL",
-          "type": "MODEL",
-          "links": [
-            71
-          ]
-        }
-      ],
-      "properties": {
-        "cnr_id": "comfy-core",
-        "ver": "0.3.73",
-        "Node name for S&R": "UNETLoader",
-        "models": [
-          {
-            "name": "z_image_bf16.safetensors",
-            "url": "https://huggingface.co/Comfy-Org/z_image/resolve/main/split_files/diffusion_models/z_image_bf16.safetensors",
-            "directory": "diffusion_models"
-          }
-        ],
-        "enableTabs": false,
-        "tabWidth": 65,
-        "tabXOffset": 10,
-        "hasSecondTab": false,
-        "secondTabText": "Send Back",
-        "secondTabOffset": 80,
-        "secondTabWidth": 65
-      },
-      "widgets_values": [
-        "z_image_bf16.safetensors",
-        "default"
-      ]
-    },
-    {
-      "id": 35,
-      "type": "MarkdownNote",
-      "pos": [
-        -289.6666459954674,
-        -158.6666723932416
-      ],
-      "size": [
-        510,
-        420
-      ],
-      "flags": {
-        "collapsed": false
-      },
-      "order": 4,
-      "mode": 0,
-      "inputs": [],
-      "outputs": [],
-      "title": "Model link (for local users)",
-      "properties": {},
-      "widgets_values": [
-        "## Model links\n\n**text_encoders**\n\n- [qwen_3_4b.safetensors](https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/text_encoders/qwen_3_4b.safetensors)\n\n**diffusion_models**\n\n- [z_image_bf16.safetensors](https://huggingface.co/Comfy-Org/z_image/resolve/main/split_files/diffusion_models/z_image_bf16.safetensors)\n\n**vae**\n\n- [ae.safetensors](https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/vae/ae.safetensors)\n\n\nModel Storage Location\n\n```\n📂 ComfyUI/\n├── 📂 models/\n│   ├── 📂 text_encoders/\n│   │      └── qwen_3_4b.safetensors\n│   ├── 📂 diffusion_models/\n│   │      └── z_image_bf16.safetensors\n│   └── 📂 vae/\n│          └── ae.safetensors\n```\n"
-      ],
-      "color": "#432",
-      "bgcolor": "#000"
-    },
-    {
       "id": 71,
       "type": "CLIPTextEncode",
       "pos": [
-        590,
-        250
+        668.6624150068071,
+        261.3623595035895
       ],
       "size": [
         390,
         125
       ],
       "flags": {},
-      "order": 7,
+      "order": 9,
       "mode": 0,
       "inputs": [
         {
           "name": "clip",
           "type": "CLIP",
-          "link": 82
+          "link": 92
         }
       ],
       "outputs": [
@@ -478,10 +354,10 @@
       ],
       "size": [
         300,
-        52
+        88
       ],
       "flags": {},
-      "order": 5,
+      "order": 2,
       "mode": 0,
       "inputs": [],
       "outputs": [],
@@ -505,7 +381,7 @@
         46
       ],
       "flags": {},
-      "order": 10,
+      "order": 11,
       "mode": 0,
       "inputs": [
         {
@@ -542,17 +418,191 @@
         "secondTabWidth": 65
       },
       "widgets_values": []
+    },
+    {
+      "id": 35,
+      "type": "MarkdownNote",
+      "pos": [
+        -512.5435205225731,
+        -163.9108493976047
+      ],
+      "size": [
+        510,
+        420
+      ],
+      "flags": {
+        "collapsed": false
+      },
+      "order": 3,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [],
+      "title": "Model link (for local users)",
+      "properties": {},
+      "widgets_values": [
+        "## Model links\n\n**text_encoders**\n\n- [qwen_3_4b.safetensors](https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/text_encoders/qwen_3_4b.safetensors)\n\n**diffusion_models**\n\n- [z_image_bf16.safetensors](https://huggingface.co/Comfy-Org/z_image/resolve/main/split_files/diffusion_models/z_image_bf16.safetensors)\n\n**vae**\n\n- [ae.safetensors](https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/vae/ae.safetensors)\n\n\nModel Storage Location\n\n```\n📂 ComfyUI/\n├── 📂 models/\n│   ├── 📂 text_encoders/\n│   │      └── qwen_3_4b.safetensors\n│   ├── 📂 diffusion_models/\n│   │      └── z_image_bf16.safetensors\n│   └── 📂 vae/\n│          └── ae.safetensors\n```\n"
+      ],
+      "color": "#432",
+      "bgcolor": "#000"
+    },
+    {
+      "id": 62,
+      "type": "CLIPLoader",
+      "pos": [
+        29.97600461232999,
+        -6.147219449743944
+      ],
+      "size": [
+        270,
+        106
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            95
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.73",
+        "Node name for S&R": "CLIPLoader",
+        "models": [
+          {
+            "name": "qwen_3_4b.safetensors",
+            "url": "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/text_encoders/qwen_3_4b.safetensors",
+            "directory": "text_encoders"
+          }
+        ],
+        "enableTabs": false,
+        "tabWidth": 65,
+        "tabXOffset": 10,
+        "hasSecondTab": false,
+        "secondTabText": "Send Back",
+        "secondTabOffset": 80,
+        "secondTabWidth": 65
+      },
+      "widgets_values": [
+        "qwen_3_4b.safetensors",
+        "lumina2",
+        "default"
+      ]
+    },
+    {
+      "id": 66,
+      "type": "UNETLoader",
+      "pos": [
+        29.97600461232999,
+        -136.14724310318218
+      ],
+      "size": [
+        270,
+        82
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            96
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.3.73",
+        "Node name for S&R": "UNETLoader",
+        "models": [
+          {
+            "name": "z_image_bf16.safetensors",
+            "url": "https://huggingface.co/Comfy-Org/z_image/resolve/main/split_files/diffusion_models/z_image_bf16.safetensors",
+            "directory": "diffusion_models"
+          }
+        ],
+        "enableTabs": false,
+        "tabWidth": 65,
+        "tabXOffset": 10,
+        "hasSecondTab": false,
+        "secondTabText": "Send Back",
+        "secondTabOffset": 80,
+        "secondTabWidth": 65
+      },
+      "widgets_values": [
+        "z_image_bf16.safetensors",
+        "default"
+      ]
+    },
+    {
+      "id": 77,
+      "type": "Lora Loader Stack (rgthree)",
+      "pos": [
+        338.19364584277076,
+        -185.3039254640163
+      ],
+      "size": [
+        282.542578125,
+        246
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "MODEL",
+          "link": 96
+        },
+        {
+          "name": "clip",
+          "type": "CLIP",
+          "link": 95
+        }
+      ],
+      "outputs": [
+        {
+          "name": "MODEL",
+          "type": "MODEL",
+          "links": [
+            93
+          ]
+        },
+        {
+          "name": "CLIP",
+          "type": "CLIP",
+          "links": [
+            91,
+            92
+          ]
+        }
+      ],
+      "properties": {
+        "cnr_id": "rgthree-comfy",
+        "ver": "8ff50e4521881eca1fe26aec9615fc9362474931",
+        "Node name for S&R": "Lora Loader Stack (rgthree)"
+      },
+      "widgets_values": [
+        "None",
+        1,
+        "None",
+        1,
+        "None",
+        1,
+        "None",
+        1
+      ]
     }
   ],
   "links": [
-    [
-      71,
-      66,
-      0,
-      70,
-      0,
-      "MODEL"
-    ],
     [
       72,
       69,
@@ -594,14 +644,6 @@
       "LATENT"
     ],
     [
-      78,
-      62,
-      0,
-      67,
-      0,
-      "CLIP"
-    ],
-    [
       79,
       65,
       0,
@@ -610,20 +652,52 @@
       "IMAGE"
     ],
     [
-      82,
-      62,
-      0,
-      71,
-      0,
-      "CLIP"
-    ],
-    [
       83,
       71,
       0,
       69,
       2,
       "CONDITIONING"
+    ],
+    [
+      91,
+      77,
+      1,
+      67,
+      0,
+      "CLIP"
+    ],
+    [
+      92,
+      77,
+      1,
+      71,
+      0,
+      "CLIP"
+    ],
+    [
+      93,
+      77,
+      0,
+      70,
+      0,
+      "MODEL"
+    ],
+    [
+      95,
+      62,
+      0,
+      77,
+      1,
+      "CLIP"
+    ],
+    [
+      96,
+      66,
+      0,
+      77,
+      0,
+      "MODEL"
     ]
   ],
   "groups": [
@@ -631,8 +705,8 @@
       "id": 2,
       "title": "Step2 - Image size",
       "bounding": [
-        260.3333367785333,
-        241.33333237890417,
+        7.739555250159167,
+        243.9554448869497,
         290,
         200
       ],
@@ -644,8 +718,8 @@
       "id": 3,
       "title": "Step3 - Prompt",
       "bounding": [
-        570.3333367785333,
-        -188.66666762109583,
+        648.9957517853404,
+        -177.3043081175064,
         440,
         630
       ],
@@ -657,8 +731,8 @@
       "id": 4,
       "title": "Step1 - Load models",
       "bounding": [
-        260.3333367785333,
-        -188.66666762109583,
+        19.9759682603397,
+        -206.14720962391158,
         290,
         413.6
       ],
@@ -670,13 +744,13 @@
   "config": {},
   "extra": {
     "ds": {
-      "scale": 0.539136280440646,
+      "scale": 1.27125514759935,
       "offset": [
-        367.82528451977873,
-        797.9184996280613
+        629.3542507878692,
+        431.43802457437687
       ]
     },
-    "frontendVersion": "1.37.11",
+    "frontendVersion": "1.38.14",
     "workflowRendererVersion": "LG",
     "VHS_latentpreview": false,
     "VHS_latentpreviewrate": 0,
