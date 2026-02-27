@@ -1,0 +1,453 @@
+{
+  "id": "bitdance-kijai-style-starter",
+  "revision": 1,
+  "last_node_id": 7,
+  "last_link_id": 11,
+  "nodes": [
+    {
+      "id": 2,
+      "type": "BitDanceTextEncodeCached",
+      "pos": [
+        -40.190361072887086,
+        31.235586539528555
+      ],
+      "size": [
+        605.4545454545455,
+        596.9697154651988
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text_encoder",
+          "type": "BITDANCE_TEXT_ENCODER",
+          "link": 1
+        },
+        {
+          "name": "model_to_offload",
+          "shape": 7,
+          "type": "BITDANCE_MODEL",
+          "link": 2
+        }
+      ],
+      "outputs": [
+        {
+          "name": "positive",
+          "type": "BITDANCE_TEXT_EMBEDS",
+          "links": [
+            5
+          ]
+        },
+        {
+          "name": "negative",
+          "type": "BITDANCE_TEXT_EMBEDS",
+          "links": [
+            6
+          ]
+        },
+        {
+          "name": "positive_prompt",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BitDanceTextEncodeCached",
+        "ue_properties": {
+          "widget_ue_connectable": {
+            "positive_prompt": true,
+            "negative_prompt": true,
+            "force_offload": true,
+            "device": true
+          },
+          "version": "7.6.2",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "A wine glass full of tiny red pandas wearing blue hats.",
+        "",
+        false,
+        "gpu"
+      ]
+    },
+    {
+      "id": 3,
+      "type": "BitDanceSampler",
+      "pos": [
+        597.1630369419064,
+        30.795832521044645
+      ],
+      "size": [
+        320,
+        286
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "model",
+          "type": "BITDANCE_MODEL",
+          "link": 4
+        },
+        {
+          "name": "vae",
+          "type": "BITDANCE_VAE",
+          "link": 3
+        },
+        {
+          "name": "positive",
+          "type": "BITDANCE_TEXT_EMBEDS",
+          "link": 5
+        },
+        {
+          "name": "negative",
+          "type": "BITDANCE_TEXT_EMBEDS",
+          "link": 6
+        },
+        {
+          "name": "resolution",
+          "type": "BITDANCE_RESOLUTION",
+          "link": 11
+        }
+      ],
+      "outputs": [
+        {
+          "name": "bitdance_latent",
+          "type": "BITDANCE_LATENT",
+          "links": [
+            7
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BitDanceSampler",
+        "ue_properties": {
+          "widget_ue_connectable": {
+            "height": true,
+            "width": true,
+            "sampler_name": true,
+            "num_sampling_steps": true,
+            "guidance_scale": true,
+            "num_images": true,
+            "seed": true
+          },
+          "version": "7.6.2",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "euler_maruyama",
+        50,
+        7.5,
+        1,
+        741023878268056,
+        "randomize"
+      ]
+    },
+    {
+      "id": 4,
+      "type": "BitDanceDecode",
+      "pos": [
+        939.5517938414011,
+        41.9301662138632
+      ],
+      "size": [
+        210,
+        60
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "vae",
+          "type": "BITDANCE_VAE",
+          "link": 8
+        },
+        {
+          "name": "bitdance_latent",
+          "type": "BITDANCE_LATENT",
+          "link": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "image",
+          "type": "IMAGE",
+          "links": [
+            9,
+            10
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BitDanceDecode",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "version": "7.6.2",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": []
+    },
+    {
+      "id": 7,
+      "type": "PreviewImage",
+      "pos": [
+        1186.3496394504903,
+        34.8865750144608
+      ],
+      "size": [
+        140,
+        26
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "images",
+          "type": "IMAGE",
+          "link": 10
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "cnr_id": "comfy-core",
+        "ver": "0.13.0",
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        },
+        "Node name for S&R": "PreviewImage"
+      }
+    },
+    {
+      "id": 1,
+      "type": "BitDanceLoader",
+      "pos": [
+        -791.2666442871093,
+        49.93334350585938
+      ],
+      "size": [
+        700,
+        360
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "bitdance_model",
+          "type": "BITDANCE_MODEL",
+          "links": [
+            2,
+            4
+          ]
+        },
+        {
+          "name": "bitdance_text_encoder",
+          "type": "BITDANCE_TEXT_ENCODER",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "bitdance_vae",
+          "type": "BITDANCE_VAE",
+          "links": [
+            3,
+            8
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "BitDanceLoader",
+        "ue_properties": {
+          "widget_ue_connectable": {
+            "model_name": true,
+            "text_encoder_name": true,
+            "vae_name": true,
+            "quantization": true,
+            "load_device": true,
+            "text_encoder_load_device": true,
+            "vae_load_device": true,
+            "attention_mode": true,
+            "rms_norm_function": true,
+            "precision": true
+          },
+          "version": "7.6.2",
+          "input_ue_unconnectable": {}
+        }
+      },
+      "widgets_values": [
+        "BitDance_14B_MainModel_FP8.safetensors",
+        "BitDance_TextEncoder_FP8.safetensors",
+        "BitDance_VAE_FP16.safetensors",
+        "fp8_e4m3fn_scaled",
+        "offload_device",
+        "main_device",
+        "offload_device",
+        "auto",
+        "default",
+        "fp16"
+      ]
+    },
+    {
+      "id": 6,
+      "type": "BitDanceResolution",
+      "pos": [
+        -368.2271307043178,
+        480.4575323845909
+      ],
+      "size": [
+        270,
+        118
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "resolution",
+          "type": "BITDANCE_RESOLUTION",
+          "links": [
+            11
+          ]
+        },
+        {
+          "name": "width",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "height",
+          "type": "INT",
+          "links": null
+        },
+        {
+          "name": "label",
+          "type": "STRING",
+          "links": null
+        }
+      ],
+      "properties": {
+        "ue_properties": {
+          "widget_ue_connectable": {},
+          "input_ue_unconnectable": {}
+        },
+        "Node name for S&R": "BitDanceResolution"
+      },
+      "widgets_values": [
+        "640x1536"
+      ]
+    }
+  ],
+  "links": [
+    [
+      1,
+      1,
+      1,
+      2,
+      0,
+      "BITDANCE_TEXT_ENCODER"
+    ],
+    [
+      2,
+      1,
+      0,
+      2,
+      1,
+      "BITDANCE_MODEL"
+    ],
+    [
+      3,
+      1,
+      2,
+      3,
+      1,
+      "BITDANCE_VAE"
+    ],
+    [
+      4,
+      1,
+      0,
+      3,
+      0,
+      "BITDANCE_MODEL"
+    ],
+    [
+      5,
+      2,
+      0,
+      3,
+      2,
+      "BITDANCE_TEXT_EMBEDS"
+    ],
+    [
+      6,
+      2,
+      1,
+      3,
+      3,
+      "BITDANCE_TEXT_EMBEDS"
+    ],
+    [
+      7,
+      3,
+      0,
+      4,
+      1,
+      "BITDANCE_LATENT"
+    ],
+    [
+      8,
+      1,
+      2,
+      4,
+      0,
+      "BITDANCE_VAE"
+    ],
+    [
+      10,
+      4,
+      0,
+      7,
+      0,
+      "IMAGE"
+    ],
+    [
+      11,
+      6,
+      0,
+      3,
+      4,
+      "BITDANCE_RESOLUTION"
+    ]
+  ],
+  "groups": [],
+  "config": {},
+  "extra": {
+    "workflowRendererVersion": "LG",
+    "ue_links": [],
+    "ds": {
+      "scale": 0.9090909090909091,
+      "offset": [
+        1052.9686179135688,
+        273.495250696358
+      ]
+    },
+    "links_added_by_ue": [],
+    "frontendVersion": "1.38.13",
+    "VHS_latentpreview": false,
+    "VHS_latentpreviewrate": 0,
+    "VHS_MetadataImage": true,
+    "VHS_KeepIntermediate": true
+  },
+  "version": 0.4
+}
