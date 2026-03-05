@@ -52,7 +52,7 @@ STATIC_PROFILES = {
     "Base bf16": {
         "diffusion_model": os.path.join(MODEL_DIR, "z_image_bf16.safetensors"),
         "clip_l":          "",
-        "llm":             os.path.join(MODEL_DIR, "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"),
+        "llm":             os.path.join(MODEL_DIR, "Qwen3-4B-Instruct-2507-Q5_K_S.gguf"),
         "extra_flags":     [],
         "defaults": {
             "steps":           25,
@@ -691,4 +691,5 @@ if __name__ == "__main__":
             }
         });
         """
+
     )
