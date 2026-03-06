@@ -558,7 +558,7 @@ def create_ui():
                         Click <strong style="color:#fde68a;">Open App Folder</strong> below to jump straight
                         to the directory &mdash; look for
                         <code style="background:#3a2a0a;padding:2px 6px;border-radius:4px;">
-                        Z-Image-Model-Manager.bat</code> and double-click to run it.
+                        DOWNLOAD-MODELS-CLICK-HERE.bat</code> and double-click to run it.
                     </p>
                 </div>
                 """)
@@ -711,3 +711,4 @@ if __name__ == "__main__":
         """
 
     )
+
