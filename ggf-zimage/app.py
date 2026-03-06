@@ -238,7 +238,7 @@ def build_model_table_html():
 
 def open_explorer_to_script_dir():
     try:
-        subprocess.Popen(["explorer", SCRIPT_DIR])
+        subprocess.Popen(["explorer", str(Path(SCRIPT_DIR).parent)])
         return f"Opened Explorer to: {SCRIPT_DIR}"
     except Exception as e:
         return f"Could not open Explorer: {e}"
